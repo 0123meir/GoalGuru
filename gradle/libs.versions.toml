@@ -21,8 +21,10 @@ lifecycle-livedata-ktx = "2.6.2"
 glide = "4.15.1"
 viewpager2 = "1.0.0"
 cardview = "1.0.0"
+viewpager2Version = "1.1.0"
 
 [libraries]
+androidx-viewpager2-v110 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2Version" }
 google-material = { module = "com.google.android.material:material", version.ref = "material" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment-ktx" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
