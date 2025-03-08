@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<!--    TODO: Match header design with Meir   -->
+
+    <ImageView
+        android:id="@+id/logout"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:src="@drawable/logout"
+        android:layout_marginEnd="100dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/userAvatar"
+        app:layout_constraintTop_toTopOf="@id/userAvatar"
+        app:layout_constraintBottom_toBottomOf="@id/userAvatar"
+        app:layout_constraintHorizontal_chainStyle="packed" />
+
+<!--    TODO: Check if user uploaded pictures are a feature and replace src   -->
+    <ImageView
+        android:id="@+id/userAvatar"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="15dp"
+        android:src="@drawable/avatar"
+        app:layout_constraintStart_toEndOf="@id/logout"
+        app:layout_constraintEnd_toStartOf="@id/forum"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/forum"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:src="@drawable/forum"
+        android:layout_marginStart="100dp"
+        app:layout_constraintStart_toEndOf="@id/userAvatar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/userAvatar"
+        app:layout_constraintBottom_toBottomOf="@id/userAvatar"
+        app:layout_constraintHorizontal_chainStyle="packed" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toStartOf="@+id/userAvatar"
+        app:layout_constraintGuide_begin="100dp"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
