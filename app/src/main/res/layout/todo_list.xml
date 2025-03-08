@@ -13,14 +13,14 @@
         android:src="@drawable/logout"
         android:layout_marginEnd="100dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/userAvatar"
-        app:layout_constraintTop_toTopOf="@id/userAvatar"
-        app:layout_constraintBottom_toBottomOf="@id/userAvatar"
+        app:layout_constraintEnd_toStartOf="@id/user_avatar"
+        app:layout_constraintTop_toTopOf="@id/user_avatar"
+        app:layout_constraintBottom_toBottomOf="@id/user_avatar"
         app:layout_constraintHorizontal_chainStyle="packed" />
 
 <!--    TODO: Check if user uploaded pictures are a feature and replace src   -->
     <ImageView
-        android:id="@+id/userAvatar"
+        android:id="@+id/user_avatar"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_marginTop="15dp"
@@ -35,10 +35,10 @@
         android:layout_height="25dp"
         android:src="@drawable/forum"
         android:layout_marginStart="100dp"
-        app:layout_constraintStart_toEndOf="@id/userAvatar"
+        app:layout_constraintStart_toEndOf="@id/user_avatar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/userAvatar"
-        app:layout_constraintBottom_toBottomOf="@id/userAvatar"
+        app:layout_constraintTop_toTopOf="@id/user_avatar"
+        app:layout_constraintBottom_toBottomOf="@id/user_avatar"
         app:layout_constraintHorizontal_chainStyle="packed" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -46,9 +46,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintEnd_toStartOf="@+id/userAvatar"
+        app:layout_constraintEnd_toStartOf="@+id/user_avatar"
         app:layout_constraintGuide_begin="100dp"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ListView
+        android:id="@+id/task_list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/user_avatar"
+        app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
