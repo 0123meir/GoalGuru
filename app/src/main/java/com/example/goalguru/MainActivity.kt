@@ -17,11 +17,6 @@ class MainActivity : AppCompatActivity() {
 
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
 
-        // Load default fragment (YourPostsFragment) when activity starts
-//        if (savedInstanceState == null) {
-//            replaceFragment(YourPostsFragment())
-//        }
-
         // Handle bottom navigation selection
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
