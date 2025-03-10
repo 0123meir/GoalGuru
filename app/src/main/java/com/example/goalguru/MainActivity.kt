@@ -1,37 +1,73 @@
 package com.example.goalguru
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import com.example.goalguru.ui.theme.ForumFragment
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.imageview.ShapeableImageView
+
+//TODO: add when fragments are implemented
+//import com.example.goalguru.ui.theme.ProfileFragment
+//import com.example.goalguru.ui.theme.TodoListFragment
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var rightIcon: ImageView
+    private lateinit var exitIcon: ImageView
+    private lateinit var profilePhoto: ShapeableImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+        // Initialize views
+        val headerView = findViewById<androidx.cardview.widget.CardView>(R.id.header)
+        rightIcon = headerView.findViewById(R.id.iv_right_icon)
+        exitIcon = headerView.findViewById(R.id.iv_exit)
+        profilePhoto = headerView.findViewById(R.id.iv_profile_photo)
 
-        // Handle bottom navigation selection
-        bottomNavigationView.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-//                R.id.nav_login -> replaceFragment(LoginFragment())
-//                R.id.nav_register -> replaceFragment(RegisterFragment())
-                R.id.nav_forum -> replaceFragment(ForumFragment())
+        // Set the initial fragment (ForumFragment) if the activity is newly created
+        if (savedInstanceState == null) {
+            loadFragment(ForumFragment())
+        }
+
+        // Set click listeners
+        setupClickListeners()
+    }
+
+    private fun setupClickListeners() {
+        exitIcon.setOnClickListener {
+            AppUtils.showExitConfirmationDialog(this) {
+                finish()
             }
-            true
+        }
+        profilePhoto.setOnClickListener {
+//            loadFragment(ProfileFragment())
         }
     }
 
-    // Function to replace fragments
-    private fun replaceFragment(fragment: Fragment) {
+    // Function to load a fragment into the fragment_container
+    private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
+
+        // Update the right icon based on the loaded fragment
+        updateRightIcon(fragment)
+    }
+
+    private fun updateRightIcon(fragment: Fragment) {
+        if (fragment is ForumFragment) {
+            rightIcon.setImageResource(R.drawable.to_do_list)
+            rightIcon.setOnClickListener {
+//                loadFragment(TodoListFragment())
+            }
+//        } else if (fragment is TodoListFragment) {
+//            rightIcon.setImageResource(R.drawable.ic_forum)
+//            rightIcon.setOnClickListener {
+//                loadFragment(ForumFragment())
+//            }
+        }
     }
 }
