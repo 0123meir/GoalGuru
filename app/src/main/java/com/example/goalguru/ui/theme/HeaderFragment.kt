@@ -53,7 +53,7 @@ class HeaderFragment : Fragment() {
                 requireActivity().finish()
             }
         }
-
+        // TODO: change photo after user auth
         // Set up profile photo click
         view.findViewById<ShapeableImageView>(R.id.iv_profile_photo).setOnClickListener {
             // Check if custom handler wants to handle this

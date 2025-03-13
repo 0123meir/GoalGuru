@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -13,14 +14,12 @@
         android:layout_height="wrap_content">
 
         <ImageView
-            android:id="@+id/profile_image"
+            android:id="@+id/iv_profile_photo"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_launcher_foreground"
             android:contentDescription="Profile Image"
-            android:layout_gravity="center_vertical"
-            />
+            android:layout_gravity="center_vertical" />
 
         <LinearLayout
             android:orientation="vertical"
@@ -122,21 +121,51 @@
             android:text="Comment"/>
     </LinearLayout>
 
-    <!-- Comment Section: Placeholder Block -->
+    <!-- Comment Section -->
     <LinearLayout
+        android:id="@+id/comments_section"
         android:layout_width="match_parent"
-        android:layout_height="77dp"
-        android:layout_marginTop="16dp"
-        android:background="@android:color/darker_gray"
-        android:orientation="vertical"
-        android:padding="8dp">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Comment placeholder"
-            android:textColor="#ffffff"
-            android:textSize="14sp" />
-    </LinearLayout>
+            android:text="Comments"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp"/>
 
+        <!-- Comments RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/comments_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"/>
+
+        <!-- Add comment section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <EditText
+                android:id="@+id/comment_input"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Add a comment"
+                android:inputType="textMultiLine"
+                android:minLines="1"
+                android:maxLines="3"/>
+
+            <Button
+                android:id="@+id/submit_comment_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="Post"/>
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

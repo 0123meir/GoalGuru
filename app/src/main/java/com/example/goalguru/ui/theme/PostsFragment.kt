@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.goalguru.R
+import com.example.goalguru.util.MockDataProvider
 
 class PostsFragment : Fragment() {
 
@@ -42,16 +43,10 @@ class PostsFragment : Fragment() {
     }
 
     private fun getYourPosts(): List<Post> {
-        return listOf(
-            Post("Meir Cohen", "Hello everyone!", listOf(), 5),
-            Post("Meir Cohen", "Check out this cool picture!", listOf("https://example.com/image2.jpg"), 10)
-        )
+        return MockDataProvider.generateMockPosts(3)
     }
     private fun getFriendsPosts(): List<Post> {
-        return listOf(
-            Post("John Doe", "Hello everyone!", listOf(), 5),
-            Post("Liraz Cohen", "Check out this cool picture!", listOf("https://example.com/image2.jpg"), 10)
-        )
+        return MockDataProvider.generateMockPosts(10)
     }
 
     companion object {
