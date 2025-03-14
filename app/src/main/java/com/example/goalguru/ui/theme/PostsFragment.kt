@@ -8,10 +8,14 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.goalguru.R
+import com.example.goalguru.model.Model
+import com.example.goalguru.model.Post
 
 class PostsFragment : Fragment() {
 
     private var postType: String? = null
+    private var posts: List<Post> = listOf()
+    private var adapter: PostAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,28 +33,30 @@ class PostsFragment : Fragment() {
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val posts = if (postType == "your_posts") {
+        if (postType == "your_posts") {
             getYourPosts()
         } else {
-            getFriendsPosts()
+            this.posts = getFriendsPosts()
         }
 
-        val adapter = PostAdapter(posts)
+        adapter = PostAdapter(this.posts)
         recyclerView.adapter = adapter
 
         return view
     }
 
-    private fun getYourPosts(): List<Post> {
-        return listOf(
-            Post("Meir Cohen", "Hello everyone!", listOf(), 5),
-            Post("Meir Cohen", "Check out this cool picture!", listOf("https://example.com/image2.jpg"), 10)
-        )
+    private fun getYourPosts() {
+        Model.shared.getPosts {
+             this.posts = it
+            adapter?.set(it)
+            adapter?.notifyDataSetChanged()
+        }
     }
+
     private fun getFriendsPosts(): List<Post> {
         return listOf(
-            Post("John Doe", "Hello everyone!", listOf(), 5),
-            Post("Liraz Cohen", "Check out this cool picture!", listOf("https://example.com/image2.jpg"), 10)
+            Post(3, "John Doe", "Hello everyone!", 5),
+            Post(4, "Liraz Cohen", "Check out this cool picture!", 10)
         )
     }
 
