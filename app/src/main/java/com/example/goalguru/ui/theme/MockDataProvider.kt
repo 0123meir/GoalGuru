@@ -63,7 +63,7 @@ object MockDataProvider {
             val postText = postTexts[postIndex % postTexts.size]
 
             // Generate between 0-5 images (for future use)
-            val imageCount = (0..2).random()
+            val imageCount = (0..3).random()
             val imageUrls = List(imageCount) { "https://picsum.photos/id/${(100..999).random()}/500/500" }
 
             // Generate between 0-8 comments
