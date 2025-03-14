@@ -5,16 +5,16 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.goalguru.R
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -29,17 +29,26 @@ class PostAdapter(
         val userName: TextView = itemView.findViewById(R.id.username)
         val publishDate: TextView = itemView.findViewById(R.id.publish_date)
         val postText: TextView = itemView.findViewById(R.id.post_description)
-        val likesCount: TextView = itemView.findViewById(R.id.like_count)
-        val likeButton: Button = itemView.findViewById(R.id.like_button)
-        val commentButton: Button = itemView.findViewById(R.id.comment_button)
-        val commentInput: EditText = itemView.findViewById(R.id.comment_input)
-        val submitCommentButton: Button = itemView.findViewById(R.id.submit_comment_button)
+        val likesCount: TextView = itemView.findViewById(R.id.tv_likes_count)
+        val commentsCount: TextView = itemView.findViewById(R.id.tv_comments_count)
+        val likeAction: LinearLayout = itemView.findViewById(R.id.action_like)
+        val commentAction: LinearLayout = itemView.findViewById(R.id.action_comment)
+        val likeIcon: ImageView = itemView.findViewById(R.id.like)
+
+        // comments section
+        val commentsSection: LinearLayout = itemView.findViewById(R.id.comments_section)
         val commentsRecyclerView: RecyclerView = itemView.findViewById(R.id.comments_recycler_view)
+        val commentInput: EditText = itemView.findViewById(R.id.comment_input)
+        val submitCommentButton: MaterialButton = itemView.findViewById(R.id.submit_comment_button)
 
         // Image views
         val image1: ImageView = itemView.findViewById(R.id.image_1)
         val image2: ImageView = itemView.findViewById(R.id.image_2)
         val image3: ImageView = itemView.findViewById(R.id.image_3)
+        val image1Container: MaterialCardView = itemView.findViewById(R.id.image_1_container)
+        val image2Container: MaterialCardView = itemView.findViewById(R.id.image_2_container)
+        val image3Container: MaterialCardView = itemView.findViewById(R.id.image_3_container)
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -81,10 +90,12 @@ class PostAdapter(
         val commentAdapter = CommentAdapter(post.comments)
         holder.commentsRecyclerView.adapter = commentAdapter
 
-        // Set up comment button to focus on input
-        holder.commentButton.setOnClickListener {
-            holder.commentInput.requestFocus()
+        // Set up comments section
+        holder.commentAction.setOnClickListener {
+            toggleCommentsSection(holder, post)
         }
+        //set up comments count
+        holder.commentsCount.text = "${post.comments.size}"
 
         // Enable/disable submit comment button based on input
         holder.commentInput.addTextChangedListener(object : TextWatcher {
@@ -126,11 +137,19 @@ class PostAdapter(
         }
     }
 
+    private fun toggleCommentsSection(holder: PostAdapter.PostViewHolder, post: Post) {
+        if(holder.commentsSection.visibility == View.VISIBLE){
+            holder.commentsSection.visibility = View.GONE
+        }else{
+            holder.commentsSection.visibility = View.VISIBLE
+        }
+    }
+
     private fun setupPostImages(holder: PostViewHolder, post: Post) {
         // Hide all images by default
-        holder.image1.visibility = View.GONE
-        holder.image2.visibility = View.GONE
-        holder.image3.visibility = View.GONE
+        holder.image1Container.visibility = View.GONE
+        holder.image2Container.visibility = View.GONE
+        holder.image3Container.visibility = View.GONE
         val context = holder.itemView.context
 
         when (post.imageUrls.size) {
@@ -139,54 +158,26 @@ class PostAdapter(
             }
             1 -> {
                 // Show only the first image
-                holder.image1.visibility = View.VISIBLE
+                holder.image1Container.visibility = View.VISIBLE
                 Glide.with(context).load(post.imageUrls[0]).error(R.drawable.ic_launcher_foreground).into(holder.image1)
 
-                // Set layout parameters for single image view (make it wider)
-                val params = holder.image1.layoutParams as LinearLayout.LayoutParams
-                params.weight = 1f
-                params.width = 0 // Let weight handle the sizing
-                holder.image1.layoutParams = params
             }
             2 -> {
                 // Show first two images
-                holder.image1.visibility = View.VISIBLE
-                holder.image2.visibility = View.VISIBLE
+                holder.image1Container.visibility = View.VISIBLE
+                holder.image2Container.visibility = View.VISIBLE
                 Glide.with(context).load(post.imageUrls[0]).error(R.drawable.ic_launcher_foreground).into(holder.image1)
                 Glide.with(context).load(post.imageUrls[1]).error(R.drawable.ic_launcher_foreground).into(holder.image2)
 
-                // Set layout parameters
-                val params1 = holder.image1.layoutParams as LinearLayout.LayoutParams
-                val params2 = holder.image2.layoutParams as LinearLayout.LayoutParams
-                params1.weight = 1f
-                params2.weight = 1f
-                params1.width = 0 // Let weight handle the sizing
-                params2.width = 0 // Let weight handle the sizing
-                holder.image1.layoutParams = params1
-                holder.image2.layoutParams = params2
             }
             else -> {
                 // Show all three images
-                holder.image1.visibility = View.VISIBLE
-                holder.image2.visibility = View.VISIBLE
-                holder.image3.visibility = View.VISIBLE
+                holder.image1Container.visibility = View.VISIBLE
+                holder.image2Container.visibility = View.VISIBLE
+                holder.image3Container.visibility = View.VISIBLE
                 Glide.with(context).load(post.imageUrls[0]).error(R.drawable.ic_launcher_foreground).into(holder.image1)
                 Glide.with(context).load(post.imageUrls[1]).error(R.drawable.ic_launcher_foreground).into(holder.image2)
                 Glide.with(context).load(post.imageUrls[2]).error(R.drawable.ic_launcher_foreground).into(holder.image3)
-
-                // Set layout parameters
-                val params1 = holder.image1.layoutParams as LinearLayout.LayoutParams
-                val params2 = holder.image2.layoutParams as LinearLayout.LayoutParams
-                val params3 = holder.image3.layoutParams as LinearLayout.LayoutParams
-                params1.weight = 1f
-                params2.weight = 1f
-                params3.weight = 1f
-                params1.width = 0 // Let weight handle the sizing
-                params2.width = 0 // Let weight handle the sizing
-                params3.width = 0 // Let weight handle the sizing
-                holder.image1.layoutParams = params1
-                holder.image2.layoutParams = params2
-                holder.image3.layoutParams = params3
             }
         }
     }
@@ -201,18 +192,13 @@ class PostAdapter(
 
         // Update button appearance based on like state
         if (post.likedByUser) {
-            holder.likeButton.text = "Liked"
-
-            val likedColor = ContextCompat.getColor(context, R.color.liked_button_color)
-            holder.likeButton.setTextColor(likedColor)
-
+            holder.likeIcon.setImageResource(R.drawable.ic_like_filled)
         } else {
-            holder.likeButton.text = "Like"
-            holder.likeButton.setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray))
+            holder.likeIcon.setImageResource(R.drawable.ic_like)
         }
 
         // Set click listener for like button
-        holder.likeButton.setOnClickListener {
+        holder.likeAction.setOnClickListener {
             toggleLike(post, position)
             // Update the button appearance immediately
             setupLikeButton(holder, post, position)

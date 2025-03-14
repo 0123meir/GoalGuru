@@ -13,6 +13,8 @@ import com.example.goalguru.util.MockDataProvider
 class PostsFragment : Fragment() {
 
     private var postType: String? = null
+    private var posts: MutableList<Post> = mutableListOf()
+    private var postAdapter: PostAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,14 +32,14 @@ class PostsFragment : Fragment() {
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val posts = if (postType == "your_posts") {
-            getYourPosts()
+        posts = if (postType == "your_posts") {
+            getYourPosts().toMutableList()
         } else {
-            getFriendsPosts()
+            getFriendsPosts().toMutableList()
         }
 
-        val adapter = PostAdapter(posts)
-        recyclerView.adapter = adapter
+        postAdapter = PostAdapter(posts)
+        recyclerView.adapter = postAdapter
 
         return view
     }
@@ -45,8 +47,18 @@ class PostsFragment : Fragment() {
     private fun getYourPosts(): List<Post> {
         return MockDataProvider.generateMockPosts(3)
     }
+
     private fun getFriendsPosts(): List<Post> {
         return MockDataProvider.generateMockPosts(10)
+    }
+
+    fun addNewPost(post: Post) {
+        posts.add(0, post)  // Add to the beginning of the list
+        postAdapter?.notifyItemInserted(0)
+    }
+
+    fun getPostType(): String? {
+        return postType
     }
 
     companion object {
