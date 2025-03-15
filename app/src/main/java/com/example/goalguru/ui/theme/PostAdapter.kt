@@ -1,14 +1,19 @@
 package com.example.goalguru.ui.theme
 
+import android.app.AlertDialog
+import android.app.Dialog
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -17,6 +22,7 @@ import com.example.goalguru.model.Comment
 import com.example.goalguru.model.Post
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.textfield.TextInputEditText
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -55,6 +61,9 @@ class PostAdapter(
         val image2Container: MaterialCardView = itemView.findViewById(R.id.image_2_container)
         val image3Container: MaterialCardView = itemView.findViewById(R.id.image_3_container)
 
+        val postActionsContainer: LinearLayout = itemView.findViewById(R.id.post_actions_container)
+        val btnEditPost: ImageButton = itemView.findViewById(R.id.btn_edit_post)
+        val btnDeletePost: ImageButton = itemView.findViewById(R.id.btn_delete_post)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -82,6 +91,23 @@ class PostAdapter(
         // Format and set the timestamp
         val formattedDate = formatTimestamp(post.timestamp)
         holder.publishDate.text = formattedDate
+
+        // Show or hide edit/delete buttons based on whether current user is the post creator
+        if (true) { // TODO: change to post.userId == currentUserId
+            holder.postActionsContainer.visibility = View.VISIBLE
+
+            // Set up edit button click listener
+            holder.btnEditPost.setOnClickListener {
+                onEditClick(post,holder, position)
+            }
+
+            // Set up delete button click listener
+            holder.btnDeletePost.setOnClickListener {
+                onDeleteClick(post, holder, position)
+            }
+        } else {
+            holder.postActionsContainer.visibility = View.GONE
+        }
 
         updateLikeCount(holder, post)
 
@@ -142,6 +168,103 @@ class PostAdapter(
             }
         }
     }
+
+    private fun onDeleteClick(post: Post, holder: PostViewHolder, position: Int) {
+        val context = holder.itemView.context
+
+        AlertDialog.Builder(context)
+            .setTitle("Delete Post")
+            .setMessage("Are you sure you want to delete this post?")
+            .setPositiveButton("Delete") { _, _ ->
+                // Remove post from list
+                val mutablePosts = posts.toMutableList()
+                mutablePosts.removeAt(position)
+                posts = mutablePosts
+
+                // TODO: Delete post from database
+
+                notifyItemRemoved(position)
+                Toast.makeText(context, "Post deleted successfully!", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun onEditClick(post: Post, holder : PostAdapter.PostViewHolder, position: Int) {
+
+            // Get the Dialog
+            val dialog = Dialog(holder.itemView.context)
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+            dialog.setContentView(R.layout.dialog_edit_post)
+            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+
+            // Get views from dialog
+            val etEditPostText: TextInputEditText = dialog.findViewById(R.id.et_edit_post_text)
+            val btnCancelEdit: MaterialButton = dialog.findViewById(R.id.btn_cancel_edit)
+            val btnSaveEdit: MaterialButton = dialog.findViewById(R.id.btn_save_edit)
+
+            // Set up image previews
+            val editImagePreview1: ImageView = dialog.findViewById(R.id.edit_image_preview_1)
+            val editImagePreview2: ImageView = dialog.findViewById(R.id.edit_image_preview_2)
+            val editImagePreview3: ImageView = dialog.findViewById(R.id.edit_image_preview_3)
+
+            // Populate form with existing post data
+            etEditPostText.setText(post.text)
+
+            // Show existing images if any
+            if (post.imageUrls.isNotEmpty()) {
+                editImagePreview1.visibility = View.VISIBLE
+                Glide.with(dialog.context)
+                    .load(post.imageUrls[0])
+                    .error(R.drawable.ic_launcher_foreground)
+                    .into(editImagePreview1)
+            }
+
+            if (post.imageUrls.size > 1) {
+                editImagePreview2.visibility = View.VISIBLE
+                Glide.with(dialog.context)
+                    .load(post.imageUrls[1])
+                    .error(R.drawable.ic_launcher_foreground)
+                    .into(editImagePreview2)
+            }
+
+            if (post.imageUrls.size > 2) {
+                editImagePreview3.visibility = View.VISIBLE
+                Glide.with(dialog.context)
+                    .load(post.imageUrls[2])
+                    .error(R.drawable.ic_launcher_foreground)
+                    .into(editImagePreview3)
+            }
+
+            // Set up button listeners
+            btnCancelEdit.setOnClickListener {
+                dialog.dismiss()
+            }
+
+            btnSaveEdit.setOnClickListener {
+                val updatedText = etEditPostText.text.toString().trim()
+
+                if (updatedText.isEmpty()) {
+                    Toast.makeText(dialog.context, "post text cannot be empty", Toast.LENGTH_SHORT).show()
+                }
+                if(updatedText.length > 200) {
+                    Toast.makeText(dialog.context, "text length must be under 200 characters",Toast.LENGTH_SHORT).show()
+
+                } else {
+                    post.text = updatedText
+
+                    // TODO: Update post in database
+
+                    notifyItemChanged(position)
+                    dialog.dismiss()
+                    Toast.makeText(dialog.context, "Post updated successfully!", Toast.LENGTH_SHORT).show()
+
+                }
+            }
+
+            dialog.show()
+        }
+
 
     private fun toggleCommentsSection(holder: PostAdapter.PostViewHolder, post: Post) {
         if(holder.commentsSection.visibility == View.VISIBLE){
@@ -227,7 +350,7 @@ class PostAdapter(
         notifyItemChanged(position)
     }
 
-    private fun updateLikeCount(holder: PostViewHolder, post: Post) {
+    private fun updateLikeCount(holder: PostAdapter.PostViewHolder, post: Post) {
         // Format like count text based on number of likes
         holder.likesCount.text = when (post.likes) {
             0 -> "No likes yet"

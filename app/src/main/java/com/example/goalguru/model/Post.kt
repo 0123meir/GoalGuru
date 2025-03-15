@@ -10,7 +10,7 @@ data class Post(
     val userId: String,
     val userName: String,
     val userProfile: String? = null,
-    val text: String,
+    var text: String,
     val imageUrls: List<String> = emptyList(),
     var likes: Int = 0,
     var likedByUser: Boolean = false,
