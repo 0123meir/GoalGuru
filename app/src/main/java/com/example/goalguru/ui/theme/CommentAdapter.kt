@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.goalguru.R
+import com.example.goalguru.model.Comment
 
 class CommentAdapter(private val comments: List<Comment>) :
     RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {

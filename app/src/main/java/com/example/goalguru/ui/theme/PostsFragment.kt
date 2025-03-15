@@ -8,10 +8,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.goalguru.R
-import com.example.goalguru.util.MockDataProvider
+
+import com.example.goalguru.model.Model
+import com.example.goalguru.model.Post
 
 class PostsFragment : Fragment() {
-
     private var postType: String? = null
     private var posts: MutableList<Post> = mutableListOf()
     private var postAdapter: PostAdapter? = null
@@ -32,11 +33,10 @@ class PostsFragment : Fragment() {
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        posts = if (postType == "your_posts") {
-            getYourPosts().toMutableList()
-        } else {
-            getFriendsPosts().toMutableList()
-        }
+        postAdapter = PostAdapter(this.posts)
+        recyclerView.adapter = postAdapter
+
+        getYourPosts()
 
         postAdapter = PostAdapter(posts)
         recyclerView.adapter = postAdapter
@@ -44,12 +44,13 @@ class PostsFragment : Fragment() {
         return view
     }
 
-    private fun getYourPosts(): List<Post> {
-        return MockDataProvider.generateMockPosts(3)
-    }
 
-    private fun getFriendsPosts(): List<Post> {
-        return MockDataProvider.generateMockPosts(10)
+    private fun getYourPosts() {
+        Model.shared.getPosts {
+             this.posts = it
+            postAdapter?.set(it)
+            postAdapter?.notifyDataSetChanged()
+        }
     }
 
     fun addNewPost(post: Post) {

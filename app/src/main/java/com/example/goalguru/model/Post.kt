@@ -1,9 +1,12 @@
-package com.example.goalguru.ui.theme
+package com.example.goalguru.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.util.UUID
 
+@Entity
 data class Post(
-    val id: String = UUID.randomUUID().toString(),
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val userId: String,
     val userName: String,
     val userProfile: String? = null,

@@ -18,6 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.goalguru.R
+import com.example.goalguru.model.Comment
+import com.example.goalguru.model.Post
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
@@ -29,6 +31,10 @@ class PostAdapter(
     private var posts: List<Post>,
     private val currentUserId: String = "user_id_placeholder" // This would come from your auth system
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+
+    fun set(posts: List<Post>) {
+        this.posts = posts
+    }
 
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val profilePhoto: ImageView = itemView.findViewById(R.id.iv_profile_photo)
