@@ -15,7 +15,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import com.bumptech.glide.Glide
 import com.example.goalguru.R
-import com.google.android.material.button.MaterialButton
+import com.example.goalguru.model.Post
 import com.google.android.material.card.MaterialCardView
 
 class PostDialogHandler(private val context: Context) {
@@ -65,6 +65,10 @@ class PostDialogHandler(private val context: Context) {
         val btnCancel: Button = dialog?.findViewById(R.id.btn_cancel)!!
         val btnSubmit: Button = dialog?.findViewById(R.id.btn_submit)!!
 
+        val btnRemoveImage1: ImageView = dialog?.findViewById(R.id.delete_image_1)!!
+        val btnRemoveImage2: ImageView = dialog?.findViewById(R.id.delete_image_2)!!
+        val btnRemoveImage3: ImageView = dialog?.findViewById(R.id.delete_image_3)!!
+
         // Set the texts based on create/edit mode
         dialogTitle.text = title
         if(title == "Create Post") {
@@ -74,6 +78,19 @@ class PostDialogHandler(private val context: Context) {
             etPostText.setText(existingPost?.text)
         }
 
+        btnRemoveImage1.setOnClickListener {
+            selectedImageUris.removeAt(0)
+            updateImagePreviews(selectedImageUris)
+        }
+        btnRemoveImage2.setOnClickListener {
+            selectedImageUris.removeAt(1)
+            updateImagePreviews(selectedImageUris)
+        }
+        btnRemoveImage3.setOnClickListener {
+            selectedImageUris.removeAt(2)
+            updateImagePreviews(selectedImageUris)
+        }
+
         btnAddImage.setOnClickListener {
             if (selectedImageUris.size < 3) {
                 imageContentLauncher?.launch("image/*")
@@ -81,6 +98,7 @@ class PostDialogHandler(private val context: Context) {
                 Toast.makeText(context, "Maximum 3 images allowed", Toast.LENGTH_SHORT).show()
             }
         }
+
 
         // Set up cancel button
         btnCancel.setOnClickListener {
