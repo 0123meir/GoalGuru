@@ -17,14 +17,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/task_title_input"
+    <AutoCompleteTextView
+        android:id="@+id/task_goal_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Task Title"
+        android:hint="Task Goal"
+        android:singleLine="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/drag_handle" />
+        app:layout_constraintTop_toBottomOf="@+id/drag_handle"
+        android:layout_marginTop="16dp" />
 
     <EditText
         android:id="@+id/task_description_input"
@@ -33,10 +35,11 @@
         android:hint="Task Description"
         android:maxWidth="200dp"
         android:ellipsize="none"
-        android:maxLines="5"
+        android:maxLines="1"
+        android:singleLine="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/task_title_input"
+        app:layout_constraintTop_toBottomOf="@+id/task_goal_input"
         android:layout_marginTop="16dp" />
 
     <EditText
@@ -45,6 +48,7 @@
         android:layout_height="wrap_content"
         android:hint="Deadline (days from now)"
         android:inputType="number"
+        android:singleLine="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/task_description_input"
