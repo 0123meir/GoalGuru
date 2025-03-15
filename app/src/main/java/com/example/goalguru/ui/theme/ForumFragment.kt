@@ -101,6 +101,10 @@ class ForumFragment : Fragment(), PostDialogHandler.PostDialogCallback {
             val yourPostsFragment = findPostsFragment("your_posts")
             yourPostsFragment?.addNewPost(newPost)
 
+            //scroll up after creating a post
+            yourPostsFragment?.scrollToTop()
+
+
             // Show success message
             Toast.makeText(context, "Post created successfully!", Toast.LENGTH_SHORT).show()
 

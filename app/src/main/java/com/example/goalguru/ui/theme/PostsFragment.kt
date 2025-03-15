@@ -66,6 +66,11 @@ class PostsFragment : Fragment() {
         postAdapter?.notifyItemChanged(position)
     }
 
+    fun scrollToTop() {
+        val recyclerView: RecyclerView? = view?.findViewById(R.id.recyclerView)
+        recyclerView?.smoothScrollToPosition(0)
+    }
+
     companion object {
         private const val ARG_POST_TYPE = "postType"
 
