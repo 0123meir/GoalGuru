@@ -1,7 +1,7 @@
 package com.example.goalguru.util
 
-import com.example.goalguru.ui.theme.Comment
-import com.example.goalguru.ui.theme.Post
+import com.example.goalguru.model.Comment
+import com.example.goalguru.model.Post
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -53,10 +53,10 @@ object MockDataProvider {
      * @param count The number of posts to generate
      * @return List of Post objects with random data
      */
-    fun generateMockPosts(count: Int = 10): List<Post> {
+    fun generateMockPosts(count: Int = 10): MutableList<Post> {
         val currentTime = System.currentTimeMillis()
 
-        return List(count) { postIndex ->
+        return MutableList(count) { postIndex ->
             val postId = UUID.randomUUID().toString()
             val userId = "user_${UUID.randomUUID().toString().substring(0, 6)}"
             val userName = userNames.random()
