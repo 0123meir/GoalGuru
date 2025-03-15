@@ -3,6 +3,7 @@ package com.example.goalguru.ui.theme
 import android.app.Dialog
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
@@ -40,6 +41,7 @@ class PostDialogHandler(private val context: Context) {
         imageContentLauncher: ActivityResultLauncher<String>?,
         callback: PostDialogCallback
     ) {
+        Log.d("TAG", (post.imageUrls === selectedImageUris).toString())
         // Reset and populate with existing data
         selectedImageUris.clear()
         selectedImageUris.addAll(post.imageUrls)
@@ -97,7 +99,7 @@ class PostDialogHandler(private val context: Context) {
                     Toast.makeText(context, "Text length must be under 200 characters", Toast.LENGTH_SHORT).show()
                 }
                 else -> {
-                    callback.onPostSubmitted(postText, selectedImageUris)
+                    callback.onPostSubmitted(postText, selectedImageUris.toList())
                     dialog?.dismiss()
                 }
             }
