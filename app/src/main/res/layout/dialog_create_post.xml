@@ -48,7 +48,11 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp"
             app:boxStrokeWidth="0dp"
-            app:hintTextColor="#3369FF">
+            app:hintTextColor="#3369FF"
+            app:counterEnabled="true"
+            app:counterMaxLength="200"
+            app:counterTextColor="@color/counter_text_color"
+            app:counterOverflowTextColor="@color/counter_overflow_text_color">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_post_text"
@@ -59,7 +63,8 @@
                 android:hint="What's on your mind?"
                 android:inputType="textMultiLine"
                 android:padding="16dp"
-                android:textColorHint="#9AA0B8" />
+                android:textColorHint="#9AA0B8"
+                />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView

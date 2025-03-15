@@ -58,6 +58,34 @@
                     android:textColor="#5B6BB2"/>
             </LinearLayout>
 
+            <!-- Post actions container (Edit/Delete) - Visible only for user's own posts -->
+            <LinearLayout
+                android:id="@+id/post_actions_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <ImageButton
+                    android:id="@+id/btn_edit_post"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_edit"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Edit post"
+                    app:tint="#5B6BB2"
+                    android:layout_marginEnd="8dp"/>
+
+                <ImageButton
+                    android:id="@+id/btn_delete_post"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_delete"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Delete post"
+                    app:tint="#5B6BB2"/>
+            </LinearLayout>
+
         </LinearLayout>
 
         <!-- Post Description -->

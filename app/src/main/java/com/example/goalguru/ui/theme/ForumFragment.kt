@@ -113,6 +113,10 @@ class ForumFragment : Fragment() {
 
             if (postText.isEmpty()) {
                 Toast.makeText(context, "Please enter text for your post", Toast.LENGTH_SHORT).show()
+            }
+            if(postText.length > 200) {
+                Toast.makeText(context, "text length must be under 200 characters",Toast.LENGTH_SHORT).show()
+
             } else {
                 // Create and add the new post
                 createNewPost(postText, selectedImageUris)
