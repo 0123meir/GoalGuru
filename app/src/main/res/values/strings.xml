@@ -7,10 +7,11 @@
     <string name="previous">Previous</string>
 
 
-    <string name="publish_date">2 hours ago</string>
+    <string name="publish_date">X hours ago</string>
     <string name="post_description">This is a description of the post.</string>
-    <string name="likes_count">100 Likes</string>
+    <string name="likes_count">X Likes</string>
     <string name="username">Username</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="ForumTab" >tab</string>
 </resources>

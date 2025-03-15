@@ -8,14 +8,14 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.goalguru.R
+
 import com.example.goalguru.model.Model
 import com.example.goalguru.model.Post
 
 class PostsFragment : Fragment() {
-
     private var postType: String? = null
-    private var posts: List<Post> = listOf()
-    private var adapter: PostAdapter? = null
+    private var posts: MutableList<Post> = mutableListOf()
+    private var postAdapter: PostAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,31 +33,33 @@ class PostsFragment : Fragment() {
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        if (postType == "your_posts") {
-            getYourPosts()
-        } else {
-            this.posts = getFriendsPosts()
-        }
+        postAdapter = PostAdapter(this.posts)
+        recyclerView.adapter = postAdapter
 
-        adapter = PostAdapter(this.posts)
-        recyclerView.adapter = adapter
+        getYourPosts()
+
+        postAdapter = PostAdapter(posts)
+        recyclerView.adapter = postAdapter
 
         return view
     }
 
+
     private fun getYourPosts() {
         Model.shared.getPosts {
              this.posts = it
-            adapter?.set(it)
-            adapter?.notifyDataSetChanged()
+            postAdapter?.set(it)
+            postAdapter?.notifyDataSetChanged()
         }
     }
 
-    private fun getFriendsPosts(): List<Post> {
-        return listOf(
-            Post(3, "John Doe", "Hello everyone!", 5),
-            Post(4, "Liraz Cohen", "Check out this cool picture!", 10)
-        )
+    fun addNewPost(post: Post) {
+        posts.add(0, post)  // Add to the beginning of the list
+        postAdapter?.notifyItemInserted(0)
+    }
+
+    fun getPostType(): String? {
+        return postType
     }
 
     companion object {

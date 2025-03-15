@@ -4,6 +4,7 @@ import android.os.Looper
 import androidx.core.os.HandlerCompat
 import com.example.goalguru.model.dao.AppLocalDb
 import com.example.goalguru.model.dao.AppLocalDbRepository
+import com.example.goalguru.util.MockDataProvider
 import java.util.concurrent.Executors
 
 class Model private constructor() {
@@ -22,28 +23,18 @@ class Model private constructor() {
 
     private fun insertMockData(callback: () -> Unit) {
         executor.execute {
-            database.postDao().insertPosts(initYourPosts())
+            database.postDao().insertPosts(initPosts())
             mainHandler.post {
                 callback()
             }
         }
     }
 
-    private fun initYourPosts(): List<Post> {
-        return listOf(
-            Post(1,"Meir Cohen", "Hello everyone!",5),
-            Post(2, "Meir Cohen", "Check out this cool picture!",  10)
-        )
+    private fun initPosts(): MutableList<Post> {
+        return MockDataProvider.generateMockPosts(7)
     }
 
-    private fun initFriendsPosts(): List<Post> {
-        return listOf(
-            Post(3, "John Doe", "Hello everyone!", 5),
-            Post(4, "Liraz Cohen", "Check out this cool picture!", 10)
-        )
-    }
-
-    fun getPosts(callback: (List<Post>) -> Unit) {
+    fun getPosts(callback: (MutableList<Post>) -> Unit) {
         executor.execute {
             val posts = database.postDao().getAllPosts()
             mainHandler.post {

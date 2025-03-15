@@ -9,10 +9,10 @@ import com.example.goalguru.model.Post
 @Dao
 interface PostDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE) // This is used to init mock data
-    fun insertPosts(posts: List<Post>)
+    fun insertPosts(posts: MutableList<Post>)
 
     @Query("SELECT * FROM post")
-    fun getAllPosts(): List<Post>
+    fun getAllPosts(): MutableList<Post>
 
     @Query("SELECT * FROM post WHERE id = :id")
     fun getPostById(id: Int): Post
