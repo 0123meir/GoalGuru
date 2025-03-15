@@ -1,32 +1,41 @@
-package com.example.goalguru
+package com.example.goalguru.ui.theme
 
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ListView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import com.example.goalguru.R
+import com.example.goalguru.TasksAdapter
 import com.example.goalguru.databinding.NewGoalLayoutBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
-class TodoListActivity : AppCompatActivity() {
+class TodoListFragment : Fragment() {
     private var listView: ListView? = null
     private var newTask: Button? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.todo_list)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.todo_list, container, false)
 
-        listView = findViewById(R.id.task_list)
-        newTask = findViewById(R.id.new_task)
+        listView = view.findViewById(R.id.task_list)
+        newTask = view.findViewById(R.id.new_task)
 
         listView?.adapter = TasksAdapter()
 
-        newTask?.setOnClickListener() {
+        newTask?.setOnClickListener {
             openNewTaskBottomSheet()
         }
+
+        return view
     }
 
     private fun openNewTaskBottomSheet() {
-        val dialog = BottomSheetDialog(this)
+        val dialog = BottomSheetDialog(requireContext())
         val sheetBinding = NewGoalLayoutBinding.inflate(layoutInflater)
         dialog.setContentView(sheetBinding.root)
 

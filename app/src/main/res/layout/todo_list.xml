@@ -4,53 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<!--    TODO: Match header design with Meir   -->
-
-    <ImageView
-        android:id="@+id/logout"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:src="@drawable/logout"
-        android:layout_marginEnd="100dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/user_avatar"
-        app:layout_constraintTop_toTopOf="@id/user_avatar"
-        app:layout_constraintBottom_toBottomOf="@id/user_avatar"
-        app:layout_constraintHorizontal_chainStyle="packed" />
-
-<!--    TODO: Check if user uploaded pictures are a feature and replace src   -->
-    <ImageView
-        android:id="@+id/user_avatar"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="15dp"
-        android:src="@drawable/avatar"
-        app:layout_constraintStart_toEndOf="@id/logout"
-        app:layout_constraintEnd_toStartOf="@id/forum"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/forum"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:src="@drawable/forum"
-        android:layout_marginStart="100dp"
-        app:layout_constraintStart_toEndOf="@id/user_avatar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/user_avatar"
-        app:layout_constraintBottom_toBottomOf="@id/user_avatar"
-        app:layout_constraintHorizontal_chainStyle="packed" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toStartOf="@+id/user_avatar"
-        app:layout_constraintGuide_begin="100dp"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <ListView
         android:id="@+id/task_list"
         android:layout_width="0dp"
@@ -60,7 +13,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/user_avatar"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
     <Button

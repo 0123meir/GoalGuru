@@ -9,7 +9,7 @@ import com.google.android.material.imageview.ShapeableImageView
 
 //TODO: add when fragments are implemented
 //import com.example.goalguru.ui.theme.ProfileFragment
-//import com.example.goalguru.ui.theme.TodoListFragment
+import com.example.goalguru.ui.theme.TodoListFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -61,13 +61,13 @@ class MainActivity : AppCompatActivity() {
         if (fragment is ForumFragment) {
             rightIcon.setImageResource(R.drawable.to_do_list)
             rightIcon.setOnClickListener {
-//                loadFragment(TodoListFragment())
+                loadFragment(TodoListFragment())
             }
-//        } else if (fragment is TodoListFragment) {
-//            rightIcon.setImageResource(R.drawable.ic_forum)
-//            rightIcon.setOnClickListener {
-//                loadFragment(ForumFragment())
-//            }
+        } else if (fragment is TodoListFragment) {
+            rightIcon.setImageResource(R.drawable.ic_forum)
+            rightIcon.setOnClickListener {
+                loadFragment(ForumFragment())
+            }
         }
     }
 }
