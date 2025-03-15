@@ -8,7 +8,7 @@ data class Post(
     val userName: String,
     val userProfile: String? = null,
     var text: String,
-    val imageUrls: List<String> = emptyList(),
+    var imageUrls: List<String> = emptyList(),
     var likes: Int = 0,
     var likedByUser: Boolean = false,
     val comments: MutableList<Comment> = mutableListOf(),
