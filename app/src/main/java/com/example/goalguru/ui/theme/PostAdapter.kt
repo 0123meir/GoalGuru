@@ -1,13 +1,11 @@
 package com.example.goalguru.ui.theme
 
 import android.app.AlertDialog
-import android.app.Dialog
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -23,7 +21,6 @@ import com.example.goalguru.model.Comment
 import com.example.goalguru.model.Post
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.textfield.TextInputEditText
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -100,7 +97,7 @@ class PostAdapter(
 
             // Set up edit button click listener
             holder.btnEditPost.setOnClickListener {
-                onEditClick(post,holder, position)
+                onEditClick(post, holder, position)
             }
 
             // Set up delete button click listener

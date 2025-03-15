@@ -28,10 +28,11 @@
                 android:contentDescription="Goal Guru Logo" />
 
             <TextView
+                android:id="@+id/dialog_title"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Edit Post"
+                android:text="Create New Post"
                 android:textColor="#3369FF"
                 android:textSize="20sp"
                 android:textStyle="bold"
@@ -55,36 +56,34 @@
             app:counterOverflowTextColor="@color/counter_overflow_text_color">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_edit_post_text"
+                android:id="@+id/et_post_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="120dp"
                 android:gravity="top|start"
-                android:hint="Edit your post..."
+                android:hint="What's on your mind?"
                 android:inputType="textMultiLine"
                 android:padding="16dp"
                 android:textColorHint="#9AA0B8"
-
-                 />
+                />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Images section - we'll just show existing images -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Images (Cannot be modified)"
+            android:text="Add Photos (0-3)"
             android:textColor="#3369FF"
             android:textStyle="bold"
             android:layout_marginBottom="12dp" />
 
         <LinearLayout
-            android:id="@+id/edit_images_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="24dp">
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/image_preview_container_1"
                 android:layout_width="90dp"
                 android:layout_height="90dp"
                 android:layout_marginEnd="12dp"
@@ -94,15 +93,15 @@
                 app:strokeWidth="1dp">
 
                 <ImageView
-                    android:id="@+id/edit_image_preview_1"
+                    android:id="@+id/image_preview_1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:visibility="gone"
                     android:scaleType="centerCrop"
                     android:contentDescription="Image preview 1" />
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/image_preview_container_2"
                 android:layout_width="90dp"
                 android:layout_height="90dp"
                 android:layout_marginEnd="12dp"
@@ -112,15 +111,15 @@
                 app:strokeWidth="1dp">
 
                 <ImageView
-                    android:id="@+id/edit_image_preview_2"
+                    android:id="@+id/image_preview_2"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:visibility="gone"
                     android:scaleType="centerCrop"
                     android:contentDescription="Image preview 2" />
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/image_preview_container_3"
                 android:layout_width="90dp"
                 android:layout_height="90dp"
                 android:layout_marginEnd="12dp"
@@ -130,13 +129,23 @@
                 app:strokeWidth="1dp">
 
                 <ImageView
-                    android:id="@+id/edit_image_preview_3"
+                    android:id="@+id/image_preview_3"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:visibility="gone"
                     android:scaleType="centerCrop"
                     android:contentDescription="Image preview 3" />
             </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add_image"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:text="+"
+                android:textSize="32sp"
+                app:cornerRadius="12dp"
+                android:backgroundTint="#E0E6FF"
+                android:textColor="#3369FF"
+                app:rippleColor="#B9C5FF" />
         </LinearLayout>
 
         <LinearLayout
@@ -146,7 +155,7 @@
             android:gravity="end">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_cancel_edit"
+                android:id="@+id/btn_cancel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Cancel"
@@ -155,10 +164,10 @@
                 style="@style/Widget.MaterialComponents.Button.TextButton" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_save_edit"
+                android:id="@+id/btn_submit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Save"
+                android:text="Submit"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#3369FF"
                 app:cornerRadius="8dp" />

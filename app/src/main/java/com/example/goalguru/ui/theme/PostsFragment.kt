@@ -98,6 +98,10 @@ class PostsFragment : Fragment() {
         return postType
     }
 
+    fun updatePost(position: Int) {
+        postAdapter?.notifyItemChanged(position)
+    }
+
     companion object {
         private const val ARG_POST_TYPE = "postType"
 
