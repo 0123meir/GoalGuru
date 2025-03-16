@@ -3,71 +3,72 @@ package com.example.goalguru
 import android.os.Bundle
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import com.example.goalguru.ui.theme.ForumFragment
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import com.example.goalguru.databinding.ActivityMainBinding
 import com.google.android.material.imageview.ShapeableImageView
-
-//TODO: add when fragments are implemented
-//import com.example.goalguru.ui.theme.ProfileFragment
-import com.example.goalguru.ui.theme.TodoListFragment
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var rightIcon: ImageView
-    private lateinit var exitIcon: ImageView
-    private lateinit var profilePhoto: ShapeableImageView
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        // Initialize views
-        val headerView = findViewById<androidx.cardview.widget.CardView>(R.id.header)
-        rightIcon = headerView.findViewById(R.id.iv_right_icon)
-        exitIcon = headerView.findViewById(R.id.iv_exit)
-        profilePhoto = headerView.findViewById(R.id.iv_profile_photo)
+        // Set up navigation
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navController = navHostFragment.navController
 
-        // Set the initial fragment (ForumFragment) if the activity is newly created
-        if (savedInstanceState == null) {
-            loadFragment(ForumFragment())
-        }
+        // Make sure the start destination is set to todoListFragment
+        // The navGraph should be configured correctly in XML, but this confirms it
+        val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
+        navGraph.setStartDestination(R.id.todoListFragment)
+        navController.graph = navGraph
 
-        // Set click listeners
-        setupClickListeners()
+        // Set up header navigation
+        setupHeaderNavigation()
     }
 
-    private fun setupClickListeners() {
-        exitIcon.setOnClickListener {
-            AppUtils.showExitConfirmationDialog(this) {
-                finish()
+    private fun setupHeaderNavigation() {
+        // Get references to header views
+        val todoListButton = findViewById<ImageView>(R.id.iv_todo_list)
+        val profilePhoto = findViewById<ShapeableImageView>(R.id.iv_profile_photo)
+        val forumButton = findViewById<ImageView>(R.id.iv_forum)
+
+        // Navigate to Todo List
+        todoListButton.setOnClickListener {
+            if (navController.currentDestination?.id != R.id.todoListFragment) {
+                // Use popBackStack to the todoListFragment to avoid stack build-up
+                navController.popBackStack(R.id.todoListFragment, false)
             }
         }
+
+        // Navigate to Profile
         profilePhoto.setOnClickListener {
-//            loadFragment(ProfileFragment())
+            if (navController.currentDestination?.id != R.id.profileFragment) {
+                when (navController.currentDestination?.id) {
+                    R.id.todoListFragment -> navController.navigate(R.id.action_todo_to_profile)
+                    R.id.forumFragment -> navController.navigate(R.id.action_forum_to_profile)
+                }
+            }
+        }
+
+        // Navigate to Forum
+        forumButton.setOnClickListener {
+            if (navController.currentDestination?.id != R.id.forumFragment) {
+                when (navController.currentDestination?.id) {
+                    R.id.todoListFragment -> navController.navigate(R.id.action_todo_to_forum)
+                    R.id.profileFragment -> navController.navigate(R.id.action_profile_to_forum)
+                }
+            }
         }
     }
 
-    // Function to load a fragment into the fragment_container
-    private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
-
-        // Update the right icon based on the loaded fragment
-        updateRightIcon(fragment)
-    }
-
-    private fun updateRightIcon(fragment: Fragment) {
-        if (fragment is ForumFragment) {
-            rightIcon.setImageResource(R.drawable.to_do_list)
-            rightIcon.setOnClickListener {
-                loadFragment(TodoListFragment())
-            }
-        } else if (fragment is TodoListFragment) {
-            rightIcon.setImageResource(R.drawable.ic_forum)
-            rightIcon.setOnClickListener {
-                loadFragment(ForumFragment())
-            }
-        }
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 }

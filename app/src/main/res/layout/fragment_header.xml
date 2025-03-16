@@ -14,11 +14,11 @@
         android:padding="16dp">
 
         <ImageView
-            android:id="@+id/iv_exit"
+            android:id="@+id/iv_todo_list"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:contentDescription="Exit"
-            android:src="@drawable/exit"
+            android:contentDescription="Todo List"
+            android:src="@drawable/to_do_list"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -37,7 +37,7 @@
             app:strokeWidth="2dp" />
 
         <ImageView
-            android:id="@+id/iv_right_icon"
+            android:id="@+id/iv_forum"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:contentDescription="Forum"

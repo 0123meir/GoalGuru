@@ -26,8 +26,15 @@ import java.util.Locale
 
 class PostAdapter(
     private var posts: List<Post>,
-    private val currentUserId: String = "user_id_placeholder" // This would come from your auth system
+    private val currentUserId: String = "user_id_placeholder", // This would come from your auth system
+    private val listener: PostActionListener? = null
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+
+    // Interface for post actions
+    interface PostActionListener {
+        fun onEditPost(post: Post, position: Int)
+        fun onDeletePost(post: Post, position: Int)
+    }
 
     fun set(posts: List<Post>) {
         this.posts = posts
@@ -166,37 +173,35 @@ class PostAdapter(
         }
     }
 
-    private fun onDeleteClick(post: Post, holder: PostViewHolder, position: Int) {
-        val context = holder.itemView.context
+    private fun onDeleteClick(post: Post,holder: PostViewHolder, position: Int) {
+        if (listener != null) {
+            listener.onDeletePost(post, position)
+        } else {
+            val context = holder.itemView.context
+            AlertDialog.Builder(context)
+                .setTitle("Delete Post")
+                .setMessage("Are you sure you want to delete this post?")
+                .setPositiveButton("Delete") { _, _ ->
+                    // Remove post from list
+                    val mutablePosts = posts.toMutableList()
+                    mutablePosts.removeAt(position)
+                    posts = mutablePosts
 
-        AlertDialog.Builder(context)
-            .setTitle("Delete Post")
-            .setMessage("Are you sure you want to delete this post?")
-            .setPositiveButton("Delete") { _, _ ->
-                // Remove post from list
-                val mutablePosts = posts.toMutableList()
-                mutablePosts.removeAt(position)
-                posts = mutablePosts
+                    // TODO: Delete post from database
 
-                // TODO: Delete post from database
-
-                notifyItemRemoved(position)
-                Toast.makeText(context, "Post deleted successfully!", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+                    notifyItemRemoved(position)
+                    Toast.makeText(context, "Post deleted successfully!", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
     }
 
-    private fun onEditClick(post: Post, holder: PostViewHolder, position: Int) {
-        val context = holder.itemView.context
-
-        // Get the fragment that contains this adapter
-        val fragment = (context as? androidx.fragment.app.FragmentActivity)?.supportFragmentManager?.findFragmentById(R.id.fragment_container)
-
-        if (fragment is ForumFragment) {
-            // Use the ForumFragment's existing dialog handler
-            fragment.editPost(post, position)
+    private fun onEditClick(post: Post,holder: PostViewHolder, position: Int) {
+        if (listener != null) {
+            listener.onEditPost(post, position)
         } else {
+            val context = holder.itemView.context
             Toast.makeText(context, "Cannot edit post at this time", Toast.LENGTH_SHORT).show()
         }
     }

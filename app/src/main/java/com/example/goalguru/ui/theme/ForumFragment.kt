@@ -17,7 +17,7 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
 
-class ForumFragment : Fragment(), PostDialogHandler.PostDialogCallback {
+class ForumFragment : Fragment(), PostDialogHandler.PostDialogCallback, PostAdapter.PostActionListener {
 
     private lateinit var dialogHandler: PostDialogHandler
 
@@ -65,7 +65,8 @@ class ForumFragment : Fragment(), PostDialogHandler.PostDialogCallback {
         return view
     }
 
-    fun editPost(post: Post, position: Int) {
+    // Implementation of PostAdapter.PostActionListener
+    override fun onEditPost(post: Post, position: Int) {
         dialogHandler.showEditPostDialog(post, getContent, object : PostDialogHandler.PostDialogCallback {
             override fun onPostSubmitted(text: String, imageUris: List<String>) {
                 // Update the post
@@ -79,6 +80,16 @@ class ForumFragment : Fragment(), PostDialogHandler.PostDialogCallback {
                 Toast.makeText(context, "Post updated successfully!", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    override fun onDeletePost(post: Post, position: Int) {
+        // Find the appropriate fragment and update the UI
+        val yourPostsFragment = findPostsFragment("your_posts")
+        yourPostsFragment?.removePost(position)
+
+        // TODO: Delete post from database
+
+        Toast.makeText(context, "Post deleted successfully!", Toast.LENGTH_SHORT).show()
     }
 
     override fun onPostSubmitted(text: String, imageUris: List<String>) {

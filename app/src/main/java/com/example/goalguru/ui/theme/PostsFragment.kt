@@ -16,12 +16,16 @@ class PostsFragment : Fragment() {
     private var postType: String? = null
     private var posts: MutableList<Post> = mutableListOf()
     private var postAdapter: PostAdapter? = null
+    private var forumFragment: ForumFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             postType = it.getString(ARG_POST_TYPE)
         }
+
+        // Try to get the parent fragment as ForumFragment
+        forumFragment = parentFragment as? ForumFragment
     }
 
     override fun onCreateView(
@@ -33,21 +37,18 @@ class PostsFragment : Fragment() {
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        postAdapter = PostAdapter(this.posts)
+        // Initialize with the listener from ForumFragment
+        postAdapter = PostAdapter(this.posts, listener = forumFragment)
         recyclerView.adapter = postAdapter
 
         getYourPosts()
 
-        postAdapter = PostAdapter(posts)
-        recyclerView.adapter = postAdapter
-
         return view
     }
 
-
     private fun getYourPosts() {
         Model.shared.getPosts {
-             this.posts = it
+            this.posts = it
             postAdapter?.set(it)
             postAdapter?.notifyDataSetChanged()
         }
@@ -56,6 +57,13 @@ class PostsFragment : Fragment() {
     fun addNewPost(post: Post) {
         posts.add(0, post)  // Add to the beginning of the list
         postAdapter?.notifyItemInserted(0)
+    }
+
+    fun removePost(position: Int) {
+        if (position >= 0 && position < posts.size) {
+            posts.removeAt(position)
+            postAdapter?.notifyItemRemoved(position)
+        }
     }
 
     fun getPostType(): String? {
