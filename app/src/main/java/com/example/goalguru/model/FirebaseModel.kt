@@ -33,18 +33,7 @@ class FirebaseModel {
                     true -> {
                         val posts: MutableList<PostEntity> = mutableListOf()
                         for (json in it.result) {
-                            val userId = json.getString("userId") ?: ""
-                            val text = json.getString("text") ?: ""
-                            val imageUrls = json.get("imageUrls") as List<String>
-                            val timestamp = json.getLong("timestamp") ?: 0L
-
-                            posts.add(PostEntity(
-                                id = UUID.randomUUID().toString(),
-                                userId = userId,
-                                text = text,
-                                imageUrls = imageUrls,
-                                timestamp = timestamp
-                            ))
+                            posts.add(Post.fromJSON(json.data))
                         }
                         callback(posts)
                     }
@@ -54,18 +43,7 @@ class FirebaseModel {
     }
 
     fun addPost(post: Post, callback: (Boolean) -> Unit) {
-        val postMap = hashMapOf(
-            "userId" to post.userId,
-            "username" to post.username,
-            "text" to post.text,
-            "imageUrls" to post.imageUrls,
-            "likes" to post.likesCount,
-            "likedByUser" to post.isLikedByUser,
-            "comments" to post.comments,
-            "timestamp" to post.timestamp
-        )
-
-        database.collection("posts").add(postMap)
+        database.collection("posts").add(post.json)
             .addOnCompleteListener {
                 callback(it.isSuccessful)
             }

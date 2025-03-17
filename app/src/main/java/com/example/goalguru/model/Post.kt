@@ -43,36 +43,24 @@ data class Post(
 
         const val KEY_ID = "id"
         const val KEY_USER_ID = "userId"
-        const val KEY_USERNAME = "username"
         const val KEY_TEXT = "text"
         const val KEY_IMAGE_URLS = "imageUrls"
-        const val KEY_LIKES = "likes"
-        const val KEY_LIKED_BY_USER = "likedByUser"
-        const val KEY_COMMENTS = "comments"
         const val KEY_TIMESTAMP = "timestamp"
         const val LAST_UPDATED = "lastUpdated"
         private const val LOCAL_LAST_UPDATED = "posts_last_updated"
 
-        fun fromJSON(json: Map<String, Any>): Post {
+        fun fromJSON(json: Map<String, Any>): PostEntity {
             val id = json[KEY_ID] as UUID
             val userId = json[KEY_USER_ID] as UUID
-            val username = json[KEY_USERNAME] as String
             val text = json[KEY_TEXT] as String
             val imageUrls = json[KEY_IMAGE_URLS] as List<String>
-            val likes = (json[KEY_LIKES] as Long).toInt()
-            val likedByUser = json[KEY_LIKED_BY_USER] as Boolean
-            val comments = json[KEY_COMMENTS] as MutableList<Comment>
             val timestamp = json[KEY_TIMESTAMP] as Long
 
-            return Post(
+            return PostEntity(
                 id = id.toString(),
                 userId = userId.toString(),
-                username = username,
                 text = text,
                 imageUrls = imageUrls,
-                likesCount = likes,
-                isLikedByUser = likedByUser,
-                comments = comments,
                 timestamp = timestamp,
             )
         }
@@ -82,12 +70,8 @@ data class Post(
         get() = hashMapOf(
             KEY_ID to id,
             KEY_USER_ID to userId,
-            KEY_USERNAME to username,
             KEY_TEXT to text,
             KEY_IMAGE_URLS to imageUrls,
-            KEY_LIKES to likesCount,
-            KEY_LIKED_BY_USER to isLikedByUser,
-            KEY_COMMENTS to comments,
             KEY_TIMESTAMP to timestamp,
             LAST_UPDATED to FieldValue.serverTimestamp()
         )
