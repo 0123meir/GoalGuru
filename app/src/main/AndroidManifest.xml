@@ -31,6 +31,10 @@
             android:theme="@style/Theme.GoalGuru">
 
         </activity>
+
+        <meta-data
+            android:name="com.google.firebase.goalguru-4bba2"
+            android:value="goalguru-4bba2"/>
     </application>
 
 </manifest>

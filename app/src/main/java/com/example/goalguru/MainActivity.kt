@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.goalguru.ui.theme.ForumFragment
 import com.google.android.material.imageview.ShapeableImageView
+import com.google.firebase.FirebaseApp
 
 //TODO: add when fragments are implemented
 //import com.example.goalguru.ui.theme.ProfileFragment
@@ -20,6 +21,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        FirebaseApp.initializeApp(this)
 
         // Initialize views
         val headerView = findViewById<androidx.cardview.widget.CardView>(R.id.header)

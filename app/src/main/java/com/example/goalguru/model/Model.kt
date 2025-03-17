@@ -13,6 +13,9 @@ class Model private constructor() {
     private val database: AppLocalDbRepository = AppLocalDb.database
     private val executor = Executors.newSingleThreadExecutor()
     private val mainHandler = HandlerCompat.createAsync(Looper.getMainLooper())
+
+    private val firebaseModel = FirebaseModel()
+
     val tasks: MutableList<Task> = ArrayList()
 
     companion object {
@@ -54,11 +57,14 @@ class Model private constructor() {
     }
 
     fun getPosts(callback: (MutableList<Post>) -> Unit) {
-        executor.execute {
-            val posts = database.postDao().getAllPosts()
-            mainHandler.post {
-                callback(posts)
-            }
-        }
+        firebaseModel.getPosts(callback)
+
+        // TODO: Sync ROOM with Firestore - commented out for now
+//        executor.execute {
+//            val posts = database.postDao().getAllPosts()
+//            mainHandler.post {
+//                callback(posts)
+//            }
+//        }
     }
 }

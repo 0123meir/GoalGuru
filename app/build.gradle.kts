@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -65,6 +66,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.glide)
+    implementation(libs.firebase.common.ktx)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+    implementation("com.google.firebase:firebase-analytics")
     annotationProcessor(libs.glide.compiler)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.cardview)
