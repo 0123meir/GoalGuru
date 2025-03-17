@@ -36,7 +36,7 @@ class TasksAdapter(
         private val cardView: CardView = itemView.findViewById(R.id.goal_card   )
 
         fun bind(task: Task, position: Int) {
-            goalTextView.text = task.goal
+            goalTextView.text = task.title
             descriptionTextView.text = task.description
             deadlineTextView.text = deadlineTemplate(task.deadline)
             isTaskDone.isChecked = task.isChecked

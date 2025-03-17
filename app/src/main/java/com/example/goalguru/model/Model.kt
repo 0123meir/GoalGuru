@@ -4,8 +4,6 @@ import android.os.Looper
 import androidx.core.os.HandlerCompat
 import com.example.goalguru.model.dao.AppLocalDb
 import com.example.goalguru.model.dao.AppLocalDbRepository
-import com.example.goalguru.model.Task
-import com.example.goalguru.util.MockDataProvider
 import java.util.concurrent.Executors
 
 class Model private constructor() {
@@ -22,49 +20,31 @@ class Model private constructor() {
         val shared = Model()
     }
 
-    init {
-        insertMockData{}
+    fun getPosts(callback: (MutableList<PostEntity>) -> Unit) {
+        val lastUpdated: Long = Post.lastUpdated
 
-        // TODO: Liraz - insert mock data into the database
-        tasks.add(
-            Task(
-                "Save for Vacation",
-                "Set up a dedicated savings account - I'm making this one extra long to see how it handles text wrapping",
-                5,
-                false)
-        )
-        tasks.add(Task("Save for Vacation", "Cut dining out expenses by 50%", 7, false))
-        tasks.add(Task("Save for Vacation", "Research budget travel options", 10, false))
-        tasks.add(Task("Save for Vacation", "Save $200 from each paycheck", 15, true))
-        tasks.add(Task("Run a 5K", "Buy running shoes", 3, true))
-        tasks.add(Task("Run a 5K", "Create a training schedule", 5, false))
-        tasks.add(Task("Run a 5K", "Run 1K without stopping", 10, false))
-        tasks.add(Task("Run a 5K", "Increase distance to 3K", 20, false))
-        tasks.add(Task("Run a 5K", "Sign up for a local 5K race", 25, false))
-    }
+        firebaseModel.getPosts(lastUpdated) { list: List<PostEntity> ->
+            executor.execute {
+                var latestTime = lastUpdated
 
-    private fun insertMockData(callback: () -> Unit) {
-        executor.execute {
-            database.postDao().insertPosts(initPosts())
-            mainHandler.post {
-                callback()
+                for (post in list) {
+                    database.postDao().insertAll(post)
+
+                    post.timestamp.let {
+                        if (latestTime < it) {
+                            latestTime = it
+                        }
+                    }
+                }
+
+                Post.lastUpdated = lastUpdated
+                val posts = database.postDao().getAllPosts()
+
+                mainHandler.post {
+                    callback(posts)
+                }
             }
+
         }
-    }
-
-    private fun initPosts(): MutableList<Post> {
-        return MockDataProvider.generateMockPosts(7)
-    }
-
-    fun getPosts(callback: (MutableList<Post>) -> Unit) {
-        firebaseModel.getPosts(callback)
-
-        // TODO: Sync ROOM with Firestore - commented out for now
-//        executor.execute {
-//            val posts = database.postDao().getAllPosts()
-//            mainHandler.post {
-//                callback(posts)
-//            }
-//        }
     }
 }

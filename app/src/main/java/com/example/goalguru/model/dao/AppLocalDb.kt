@@ -4,11 +4,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.goalguru.base.MyApplication
-import com.example.goalguru.model.Post
 import androidx.room.TypeConverters
 import com.example.goalguru.model.Comment
+import com.example.goalguru.model.CommentEntity
+import com.example.goalguru.model.PostEntity
 
-@Database(entities = [Post::class, Comment::class], version = 3)
+@Database(entities = [PostEntity::class, CommentEntity::class], version = 4)
 @TypeConverters(Converters::class)
 abstract class AppLocalDbRepository : RoomDatabase() {
     abstract fun postDao(): PostDao
