@@ -13,7 +13,4 @@ interface CommentDao {
 
     @Query("SELECT * FROM comments")
     fun getAllComments(): List<CommentEntity>
-
-    @Query("SELECT * FROM comments WHERE id = :id")
-    fun getCommentById(id: Int): CommentEntity
 }

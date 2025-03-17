@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.goalguru.model.Post
 import com.example.goalguru.model.PostEntity
 
 @Dao
@@ -16,7 +17,4 @@ interface PostDao {
 
     @Query("SELECT * FROM posts")
     fun getAllPosts(): MutableList<PostEntity>
-
-    @Query("SELECT * FROM posts WHERE id = :id")
-    fun getPostById(id: Int): PostEntity
 }

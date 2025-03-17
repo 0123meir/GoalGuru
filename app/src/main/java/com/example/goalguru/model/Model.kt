@@ -20,7 +20,7 @@ class Model private constructor() {
         val shared = Model()
     }
 
-    fun getPosts(callback: (MutableList<PostEntity>) -> Unit) {
+    fun getPosts(callback: (MutableList<Post>) -> Unit) {
         val lastUpdated: Long = Post.lastUpdated
 
         firebaseModel.getPosts(lastUpdated) { list: List<PostEntity> ->
@@ -38,13 +38,20 @@ class Model private constructor() {
                 }
 
                 Post.lastUpdated = lastUpdated
-                val posts = database.postDao().getAllPosts()
+                val posts = database.postDao().getAllPosts().map {
+                    Post(
+                        id = it.id,
+                        userId = it.userId,
+                        text = it.text,
+                        imageUrls = it.imageUrls,
+                        timestamp = it.timestamp
+                    )
+                }.toMutableList()
 
                 mainHandler.post {
                     callback(posts)
                 }
             }
-
         }
     }
 }

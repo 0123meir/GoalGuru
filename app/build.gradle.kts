@@ -35,6 +35,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
+        languageVersion = "1.9"
     }
     buildFeatures {
         compose = true
@@ -59,7 +60,6 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.activity)
-    implementation(libs.androidx.appcompat)
     implementation(libs.google.material)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.recyclerview)
@@ -70,7 +70,7 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation("com.google.firebase:firebase-analytics")
-    annotationProcessor(libs.glide.compiler)
+    kapt(libs.glide.compiler)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.cardview)
     implementation(libs.androidx.constraintlayout)
@@ -86,4 +86,7 @@ dependencies {
     implementation(libs.room.runtime)
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+}
+kapt {
+    correctErrorTypes = true
 }

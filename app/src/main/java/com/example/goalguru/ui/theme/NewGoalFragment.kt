@@ -24,7 +24,7 @@ class NewGoalFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val existingGoals = Model.shared.tasks.map { it.goal }.distinct()
+        val existingGoals = Model.shared.tasks.map { it.title }.distinct()
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, existingGoals)
         binding?.taskGoalInput?.setAdapter(adapter)
     }

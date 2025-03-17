@@ -58,15 +58,6 @@ data class PostWithComments(
     val user: UserEntity
 )
 
-// For fetching a goal with its tasks
-data class GoalWithTasks(
-    @Embedded val goal: GoalEntity,
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "goalId"
-    )
-    val tasks: List<TaskEntity>
-)
 
 // Model Classes (For UI representation)
 
@@ -121,31 +112,6 @@ object CommentMapper {
             timestamp = entity.timestamp,
             username = username,
             userProfilePicture = userProfilePicture
-        )
-    }
-}
-
-object GoalMapper {
-    fun toGoal(goalWithTasks: GoalWithTasks): Goal {
-        val tasks = goalWithTasks.tasks.map { taskEntity ->
-            Task(
-                id = taskEntity.id,
-                userId = taskEntity.userId,
-                goalId = taskEntity.goalId,
-                description = taskEntity.description,
-                title = taskEntity.title,
-                deadline = taskEntity.deadline,
-                isChecked = taskEntity.isChecked
-            )
-        }
-
-        return Goal(
-            id = goalWithTasks.goal.id,
-            userId = goalWithTasks.goal.userId,
-            title = goalWithTasks.goal.title,
-            deadline = goalWithTasks.goal.deadline,
-            tasks = tasks,
-            completedTasksCount = tasks.count { it.isChecked }
         )
     }
 }
