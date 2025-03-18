@@ -18,6 +18,8 @@ import com.example.goalguru.model.Task
 abstract class AppLocalDbRepository : RoomDatabase() {
     abstract fun postDao(): PostDao
     abstract fun commentDao(): CommentDao
+    abstract fun userDao(): UserDao
+    abstract fun likeDao(): LikeDao
 }
 
 object AppLocalDb {

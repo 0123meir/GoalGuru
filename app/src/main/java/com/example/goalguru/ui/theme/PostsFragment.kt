@@ -5,15 +5,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.goalguru.PostsViewModel
 import com.example.goalguru.R
-
-import com.example.goalguru.model.Model
 import com.example.goalguru.model.Post
 import com.example.goalguru.model.PostEntity
+import java.util.UUID
 
 class PostsFragment : Fragment() {
     private var postType: String? = null
@@ -55,10 +55,44 @@ class PostsFragment : Fragment() {
         }
     }
 
-    fun addNewPost(post: PostEntity) {
-        viewModel?.add(0, post)  // Add to the beginning of the list
-        postAdapter?.notifyItemInserted(0)
+     fun addNewPost(text: String, imageUrls: List<String>) {
+
+        val postId = UUID.randomUUID().toString()
+        val userId = "user_id_placeholder" // TODO: Replace with actual user ID from auth
+        val username = "username_placeholder" //TODO: Replace with actual username from auth
+         val userProfilePicture = "profile_picture_placeholder" // TODO: Replace with actual profile picture URL from auth
+
+        // Create a Post object
+        val newPost = Post(
+            id = postId,
+            userId = userId,
+            text = text,
+            imageUrls = imageUrls,
+            timestamp = System.currentTimeMillis(),
+            likesCount = 0,
+            isLikedByUser = false,
+            comments = mutableListOf(),
+            username = username,
+            userProfilePicture = userProfilePicture
+        )
+
+        // Call the add post function
+        Model.shared.addPost(newPost) { success ->
+            if (success) {
+                // Show success message
+                Toast.makeText(requireContext(), "Post added successfully", Toast.LENGTH_SHORT).show()
+
+                // Refresh the posts list
+                postAdapter?.notifyItemInserted(0)
+
+            } else {
+                // Show error message
+                Toast.makeText(requireContext(), "Failed to add post", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
+
+
 
     fun getPostType(): String? {
         return postType

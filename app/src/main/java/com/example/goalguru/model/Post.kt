@@ -50,15 +50,15 @@ data class Post(
         private const val LOCAL_LAST_UPDATED = "posts_last_updated"
 
         fun fromJSON(json: Map<String, Any>): PostEntity {
-            val id = json[KEY_ID] as UUID
-            val userId = json[KEY_USER_ID] as UUID
+            val id = json[KEY_ID] as String
+            val userId = json[KEY_USER_ID] as String
             val text = json[KEY_TEXT] as String
             val imageUrls = json[KEY_IMAGE_URLS] as List<String>
             val timestamp = json[KEY_TIMESTAMP] as Long
 
             return PostEntity(
-                id = id.toString(),
-                userId = userId.toString(),
+                id = id,
+                userId = userId,
                 text = text,
                 imageUrls = imageUrls,
                 timestamp = timestamp,

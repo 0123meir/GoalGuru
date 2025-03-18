@@ -6,18 +6,14 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.goalguru.model.User
+import com.example.goalguru.model.UserEntity
+
 
 @Dao
 interface UserDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertUser(user: User)
-
-    @Update
-    fun updateUser(user: User)
-
     @Query("SELECT * FROM users WHERE id = :userId")
-    fun getUserById(userId: String): User?
+    suspend fun getUserById(userId: String): UserEntity?
 
-    @Query("DELETE FROM users WHERE id = :userId")
-    fun deleteUserById(userId: String)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertUser(user: UserEntity)
 }

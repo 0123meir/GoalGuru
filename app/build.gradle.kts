@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation(libs.identity.jvm)
     kapt(libs.glide.compiler)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.cardview)

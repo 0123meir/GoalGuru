@@ -9,15 +9,15 @@ import com.example.goalguru.model.LikeEntity
 
 @Dao
 interface LikeDao {
+    @Query("SELECT COUNT(*) FROM likes WHERE postId = :postId")
+    suspend fun getLikesCountForPost(postId: String): Int
+
+    @Query("SELECT EXISTS(SELECT 1 FROM likes WHERE postId = :postId AND userId = :userId LIMIT 1)")
+    suspend fun isPostLikedByUser(postId: String, userId: String): Boolean
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertLike(like: LikeEntity)
+    suspend fun insertLike(like: LikeEntity)
 
-    @Update
-    fun updateLike(like: LikeEntity)
-
-    @Query("SELECT * FROM likes WHERE id = :likeId")
-    fun getLikeById(likeId: String): LikeEntity?
-
-    @Query("DELETE FROM likes WHERE id = :likeId")
-    fun deleteLikeById(likeId: String)
+    @Query("DELETE FROM likes WHERE postId = :postId AND userId = :userId")
+    suspend fun deleteLike(postId: String, userId: String)
 }

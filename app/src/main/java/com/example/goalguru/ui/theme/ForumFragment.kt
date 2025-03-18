@@ -154,18 +154,10 @@ class ForumFragment : Fragment() {
 
     private fun createNewPost(text: String, imageUrls: List<String>) {
         try {
-            //TODO: save to DB
-            val newPost = PostEntity(
-                id = UUID.randomUUID().toString(),
-                userId = UUID.randomUUID().toString(), // TODO: Replace with actual user ID
-                text = text,
-                imageUrls = imageUrls,
-                timestamp = System.currentTimeMillis()
-            )
 
-            // Use the findPostsFragment function to get the right fragment
+            // Use the findPostsFragment function to get the fragment
             val yourPostsFragment = findPostsFragment("your_posts")
-            yourPostsFragment?.addNewPost(newPost)
+            yourPostsFragment?.addNewPost(text, imageUrls)
 
             // Show success message
             Toast.makeText(context, "Post created successfully!", Toast.LENGTH_SHORT).show()
