@@ -26,13 +26,14 @@ import com.google.android.material.textfield.TextInputEditText
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 class PostAdapter(
-    private var posts: List<Post>,
+    private var posts: MutableList<Post> = mutableListOf(),
     private val currentUserId: String = "user_id_placeholder" // This would come from your auth system
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
-    fun set(posts: List<Post>) {
+    fun set(posts: MutableList<Post>) {
         this.posts = posts
     }
 
@@ -72,12 +73,12 @@ class PostAdapter(
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        val post = posts[position]
+        val post = posts.get(position)
         val context = holder.itemView.context
 
-        if (!post.userProfile.isNullOrEmpty()) {
+        if (!post.userProfilePicture.isNullOrEmpty()) {
             Glide.with(context)
-                .load(post.userProfile)
+                .load(post.userProfilePicture)
                 .error(R.drawable.ic_launcher_foreground)
                 .circleCrop()
                 .into(holder.profilePhoto)
@@ -85,11 +86,11 @@ class PostAdapter(
             holder.profilePhoto.setImageResource(R.drawable.ic_launcher_foreground)
         }
 
-        holder.userName.text = post.userName
+        holder.userName.text = post.username
         holder.postText.text = post.text
 
         // Format and set the timestamp
-        val formattedDate = formatTimestamp(post.timestamp)
+        val formattedDate = formatTimestamp(post.timestamp?:0)
         holder.publishDate.text = formattedDate
 
         // Show or hide edit/delete buttons based on whether current user is the post creator
@@ -153,8 +154,12 @@ class PostAdapter(
                 // Create and add the new comment
                 val newComment = Comment(
                     userId = currentUserId,
-                    userName = currentUserName,
-                    text = commentText
+                    username = currentUserName,
+                    text = commentText,
+                    id = UUID.randomUUID().toString(),
+                    postId = UUID.randomUUID().toString(),
+                    timestamp = System.currentTimeMillis(),
+                    userProfilePicture = "https://picsum.photos/id/${(100..999).random()}/500/500"
                 )
 
                 // Add comment to post's comments list
@@ -190,7 +195,7 @@ class PostAdapter(
             .show()
     }
 
-    private fun onEditClick(post: Post, holder : PostAdapter.PostViewHolder, position: Int) {
+    private fun onEditClick(post: Post, holder : PostViewHolder, position: Int) {
 
             // Get the Dialog
             val dialog = Dialog(holder.itemView.context)
@@ -266,7 +271,7 @@ class PostAdapter(
         }
 
 
-    private fun toggleCommentsSection(holder: PostAdapter.PostViewHolder, post: Post) {
+    private fun toggleCommentsSection(holder: PostViewHolder, post: Post) {
         if(holder.commentsSection.visibility == View.VISIBLE){
             holder.commentsSection.visibility = View.GONE
         }else{
@@ -320,7 +325,7 @@ class PostAdapter(
         val context = holder.itemView.context
 
         // Update button appearance based on like state
-        if (post.likedByUser) {
+        if (post.isLikedByUser) {
             holder.likeIcon.setImageResource(R.drawable.ic_like_filled)
         } else {
             holder.likeIcon.setImageResource(R.drawable.ic_like)
@@ -336,12 +341,12 @@ class PostAdapter(
 
     private fun toggleLike(post: Post, position: Int) {
 
-        if (post.likedByUser) {
-            post.likedByUser = false
-            post.likes = (post.likes - 1).coerceAtLeast(0)
+        if (post.isLikedByUser) {
+            post.isLikedByUser = false
+            post.likesCount = (post.likesCount - 1).coerceAtLeast(0)
         } else {
-            post.likedByUser = true
-            post.likes++
+            post.isLikedByUser = true
+            post.likesCount++
         }
 
         // TODO: Update like status in the database here
@@ -350,14 +355,14 @@ class PostAdapter(
         notifyItemChanged(position)
     }
 
-    private fun updateLikeCount(holder: PostAdapter.PostViewHolder, post: Post) {
+    private fun updateLikeCount(holder: PostViewHolder, post: Post) {
         // Format like count text based on number of likes
-        holder.likesCount.text = when (post.likes) {
+        holder.likesCount.text = when (post.likesCount) {
             0 -> "No likes yet"
             1 -> "1 like"
-            else -> "${post.likes} likes"
+            else -> "${post.likesCount} likes"
         }
     }
 
-    override fun getItemCount() = posts.size
+    override fun getItemCount(): Int = posts?.size ?: 0
 }
