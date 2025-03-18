@@ -24,7 +24,7 @@ class CommentAdapter(private val comments: List<Comment>) :
 
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
         val comment = comments[position]
-        holder.userName.text = comment.userName
+        holder.userName.text = comment.username
         holder.commentText.text = comment.text
     }
 

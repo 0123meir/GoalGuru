@@ -5,17 +5,20 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.goalguru.PostsViewModel
 import com.example.goalguru.R
 
 import com.example.goalguru.model.Model
 import com.example.goalguru.model.Post
+import com.example.goalguru.model.PostEntity
 
 class PostsFragment : Fragment() {
     private var postType: String? = null
-    private var posts: MutableList<Post> = mutableListOf()
     private var postAdapter: PostAdapter? = null
+    private var viewModel: PostsViewModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,18 +31,17 @@ class PostsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        viewModel = ViewModelProvider(this)[PostsViewModel::class.java]
         val view = inflater.inflate(R.layout.fragment_posts, container, false)
 
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        postAdapter = PostAdapter(this.posts)
+        postAdapter = PostAdapter(viewModel?.posts ?: mutableListOf())
+
         recyclerView.adapter = postAdapter
 
         getYourPosts()
-
-        postAdapter = PostAdapter(posts)
-        recyclerView.adapter = postAdapter
 
         return view
     }
@@ -47,14 +49,14 @@ class PostsFragment : Fragment() {
 
     private fun getYourPosts() {
         Model.shared.getPosts {
-             this.posts = it
+            viewModel?.updatePosts(it)
             postAdapter?.set(it)
             postAdapter?.notifyDataSetChanged()
         }
     }
 
-    fun addNewPost(post: Post) {
-        posts.add(0, post)  // Add to the beginning of the list
+    fun addNewPost(post: PostEntity) {
+        viewModel?.add(0, post)  // Add to the beginning of the list
         postAdapter?.notifyItemInserted(0)
     }
 

@@ -37,25 +37,26 @@ class TodoListFragment : Fragment() {
         }
 
         newTask?.setOnClickListener {
-            openNewTaskBottomSheet(null, -1)
+            openNewTaskBottomSheet(Task(userId = "1"), -1)
         }
 
         return view
     }
 
-    private fun openNewTaskBottomSheet(task: Task?, position: Int) {
+    private fun openNewTaskBottomSheet(task: Task, position: Int) {
         val dialog = BottomSheetDialog(requireContext())
         val sheetBinding = NewEditTaskLayoutBinding.inflate(layoutInflater)
         dialog.setContentView(sheetBinding.root)
 
-        val existingGoals = Model.shared.tasks.map { it.goal }.distinct()
+        val existingGoals = Model.shared.tasks.map { it.title }.distinct()
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, existingGoals)
         sheetBinding.taskGoalInput.setAdapter(adapter)
 
-        task?.let {
-            sheetBinding.taskGoalInput.setText(it.goal)
-            sheetBinding.taskDescriptionInput.setText(it.description)
-            sheetBinding.taskDeadlineInput.setText(it.deadline.toInt().toString()) // pick number from deadline
+        if (position >= 0) {
+            val existingTask = Model.shared.tasks[position]
+            sheetBinding.taskGoalInput.setText(existingTask.title)
+            sheetBinding.taskDescriptionInput.setText(existingTask.description)
+            sheetBinding.taskDeadlineInput.setText(existingTask.deadline.toString())
         }
 
         sheetBinding.saveTaskButton.setOnClickListener {
@@ -77,19 +78,22 @@ class TodoListFragment : Fragment() {
         dialog.show()
     }
 
-    private fun saveTask(sheetBinding: NewEditTaskLayoutBinding, task: Task?, position: Int, dialog: BottomSheetDialog) {
+    private fun saveTask(sheetBinding: NewEditTaskLayoutBinding, task: Task, position: Int, dialog: BottomSheetDialog) {
         val newTask = Task(
-            goal = sheetBinding.taskGoalInput.text.toString(),
+            userId = "1",
+            title = sheetBinding.taskGoalInput.text.toString(),
             description = sheetBinding.taskDescriptionInput.text.toString(),
             deadline = sheetBinding.taskDeadlineInput.text.toString().toInt(),
-            isChecked = task?.isChecked ?: false
+            isChecked = task.isChecked ?: false
         )
 
         if (position >= 0) {
-            Model.shared.tasks[position] = newTask
+            Model.shared.tasks[position] = task
         } else {
-            Model.shared.tasks.add(newTask)
+            Model.shared.tasks.add(task)
         }
+
+        // TODO: Send to DB
 
         (recyclerView?.adapter as? TasksAdapter)?.notifyDataSetChanged()
         dialog.dismiss()

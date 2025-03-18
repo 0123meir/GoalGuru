@@ -1,10 +1,8 @@
 package com.example.goalguru.ui.theme
 
 import android.app.Dialog
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -19,9 +17,11 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.example.goalguru.R
 import com.example.goalguru.model.Post
+import com.example.goalguru.model.PostEntity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import java.util.UUID
 
 
 class ForumFragment : Fragment() {
@@ -155,10 +155,9 @@ class ForumFragment : Fragment() {
     private fun createNewPost(text: String, imageUrls: List<String>) {
         try {
             //TODO: save to DB
-            val newPost = Post(
-                userId = "current_user_id",
-                userName = "Current User",
-                userProfile = null,
+            val newPost = PostEntity(
+                id = UUID.randomUUID().toString(),
+                userId = UUID.randomUUID().toString(), // TODO: Replace with actual user ID
                 text = text,
                 imageUrls = imageUrls,
                 timestamp = System.currentTimeMillis()
