@@ -2,7 +2,6 @@ package com.example.goalguru.model
 
 import UserViewModel
 import android.util.Log
-import androidx.activity.viewModels
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
@@ -78,36 +77,6 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             }
             .addOnFailureListener { e ->
                 Log.d("UserViewModel", "Error adding user to Firestore", e)
-            }
-    }
-
-    fun getCurrentUserUsername(callback: (String?) -> Unit) {
-        val userId = Model.shared.getCurrentUserId()
-        database.collection("users").document(userId).get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    callback(document.getString("username"))
-                } else {
-                    callback(null)
-                }
-            }
-            .addOnFailureListener {
-                callback(null)
-            }
-    }
-
-    fun getCurrentUserImage(callback: (String?) -> Unit) {
-        val userId = userViewModel?.getCurrentUserId() ?: return
-        database.collection("users").document(userId).get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    callback(document.getString("profilePicture"))
-                } else {
-                    callback(null)
-                }
-            }
-            .addOnFailureListener {
-                callback(null)
             }
     }
 

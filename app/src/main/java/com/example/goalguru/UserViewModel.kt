@@ -13,20 +13,34 @@ class UserViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val _user = MutableLiveData<FirebaseUser?>()
     val user: LiveData<FirebaseUser?> get() = _user
-    private var username: String? = null
-    private var profileImage :String = ""
+
+    private val _username = MutableLiveData<String>()
+    val username: LiveData<String> get() = _username
+
+    private val _profilePicture = MutableLiveData<String>()
+    val profilePicture: LiveData<String> get() = _profilePicture
 
     init {
-        initializeUserData(auth)
+        _user.value = auth.currentUser
+        _user.value?.uid?.let { userId ->
+            firebaseModel.getUserByID(userId) { user ->
+                _username.value = user?.username ?: "unknown"
+                _profilePicture.value = user?.profilePicture ?: ""
+            }
+        }
     }
 
     fun loginUser(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    //get user data from firestore
-                    initializeUserData(auth)
-
+                    _user.value = auth.currentUser
+                    _user.value?.uid?.let { userId ->
+                        firebaseModel.getUserByID(userId) { user ->
+                            _username.value = user?.username ?: "unknown"
+                            _profilePicture.value = user?.profilePicture ?: ""
+                        }
+                    }
                     Toast.makeText(MyApplication.Globals.context, "Login successful", Toast.LENGTH_SHORT).show()
                     Log.d("UserViewModel", _user.value.toString())
                 } else {
@@ -42,35 +56,26 @@ class UserViewModel : ViewModel() {
                 if (task.isSuccessful) {
                     _user.value = auth.currentUser
                     firebaseModel.saveUserToFirestore(_user.value?.uid, email, username, "")
+                    _username.value = username
+                    _profilePicture.value = ""
                 } else {
                     _user.value = null
                 }
             }
     }
 
-    fun initializeUserData(auth: FirebaseAuth) {
-        _user.value = auth.currentUser
-        firebaseModel.getUserByID(_user.value?.uid ?: "") { user ->
-            username = user?.username
-            profileImage = user?.profilePicture ?: ""
-        }
-    }
-
     fun logoutUser() {
         auth.signOut()
         _user.value = null
+        _username.value = ""
+        _profilePicture.value = ""
     }
 
     fun getCurrentUserId(): String? {
         return _user.value?.uid
     }
 
-    fun getCurrentUserUsername(): String? {
-        return username
+    fun getUser(): FirebaseUser? {
+        return _user.value
     }
-
-    fun getCurrentUserProfileImage(): String {
-        return profileImage
-    }
-
 }

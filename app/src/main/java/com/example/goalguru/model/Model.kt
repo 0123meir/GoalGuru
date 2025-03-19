@@ -1,11 +1,6 @@
-import com.example.goalguru.model.Comment
-import com.example.goalguru.model.CommentEntity
-import com.example.goalguru.model.FirebaseModel
-import com.example.goalguru.model.LikeEntity
-import com.example.goalguru.model.Post
-import com.example.goalguru.model.PostEntity
-import com.example.goalguru.model.Task
-import com.example.goalguru.model.User
+package com.example.goalguru.model
+
+import UserViewModel
 import com.example.goalguru.model.dao.AppLocalDb
 import com.example.goalguru.model.dao.AppLocalDbRepository
 import java.util.UUID
@@ -31,7 +26,7 @@ class Model private constructor() {
         val lastUpdated: Long = Post.lastUpdated
 
         // Fetch from Firebase first
-        firebaseModel.getPosts() { postsFromDB: List<PostEntity> ->
+        firebaseModel.getPosts { postsFromDB: List<PostEntity> ->
             coroutineScope.launch {
                 var latestTime = lastUpdated
                 val posts = mutableListOf<Post>()
@@ -288,11 +283,11 @@ class Model private constructor() {
 
     // Get current user username
     fun getCurrentUserUsername(): String {
-        return userViewModel.getCurrentUserUsername() ?: "unknown_username"
+        return userViewModel.username.value ?: "unknown"
     }
 
     // Get current user profile picture
     fun getCurrentUserImage(): String {
-       return userViewModel.getCurrentUserProfileImage()
+        return userViewModel.profilePicture.value ?: ""
     }
 }

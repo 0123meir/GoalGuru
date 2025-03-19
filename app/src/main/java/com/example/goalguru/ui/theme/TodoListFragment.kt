@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.goalguru.R
 import com.example.goalguru.TasksAdapter
 import com.example.goalguru.databinding.NewEditTaskLayoutBinding
+import com.example.goalguru.model.Model
 import com.example.goalguru.model.Task
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.floatingactionbutton.FloatingActionButton
