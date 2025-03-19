@@ -68,7 +68,7 @@ class ForumFragment : Fragment() {
         viewPager.isUserInputEnabled = false
 
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
-            tab.text = if (position == 0) "Your Posts" else "Friends"
+            tab.text = if (position == 0) "Your Posts" else "Explore"
         }.attach()
 
         // Set up FAB click listener
