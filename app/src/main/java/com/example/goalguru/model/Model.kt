@@ -1,11 +1,6 @@
-import com.example.goalguru.model.Comment
-import com.example.goalguru.model.CommentEntity
-import com.example.goalguru.model.FirebaseModel
-import com.example.goalguru.model.LikeEntity
-import com.example.goalguru.model.Post
-import com.example.goalguru.model.PostEntity
-import com.example.goalguru.model.Task
-import com.example.goalguru.model.User
+package com.example.goalguru.model
+
+import UserViewModel
 import com.example.goalguru.model.dao.AppLocalDb
 import com.example.goalguru.model.dao.AppLocalDbRepository
 import java.util.UUID
@@ -20,7 +15,7 @@ class Model private constructor() {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private val mainDispatcher = Dispatchers.Main
     private val firebaseModel = FirebaseModel()
-    private val currentUserId: String = "user_id_placeholder" // Replace with actual user ID from auth
+    private val userViewModel = UserViewModel()
 
     companion object {
         val shared = Model()
@@ -31,15 +26,53 @@ class Model private constructor() {
         val lastUpdated: Long = Post.lastUpdated
 
         // Fetch from Firebase first
-        firebaseModel.getPosts(lastUpdated) { list: List<PostEntity> ->
+        firebaseModel.getPosts { postsFromDB: List<PostEntity> ->
             coroutineScope.launch {
                 var latestTime = lastUpdated
+                val posts = mutableListOf<Post>()
 
-                // Insert fetched posts into local DB
-                for (post in list) {
-                    database.postDao().insertAll(post)
+                // Insert fetched posts into local DB and convert to Post model
+                for (postEntity in postsFromDB) {
+                    database.postDao().insertAll(postEntity)
 
-                    post.timestamp.let {
+                    val likesCount = database.likeDao().getLikesCountForPost(postEntity.id)
+                    val isLikedByUser = database.likeDao().isPostLikedByUser(postEntity.id, getCurrentUserId())
+
+                    val comments = mutableListOf<Comment>()
+                    database.commentDao().getCommentsForPost(postEntity.id).forEach { commentEntity ->
+                        firebaseModel.getUserByID(commentEntity.userId) { commenter ->
+                            val comment = Comment(
+                                id = commentEntity.id,
+                                postId = commentEntity.postId,
+                                userId = commentEntity.userId,
+                                text = commentEntity.text,
+                                timestamp = commentEntity.timestamp,
+                                username = commenter?.username ?: "unknown",
+                                userProfilePicture = commenter?.profilePicture ?: ""
+                            )
+                            comments.add(comment)
+                        }
+                    }
+
+                    // get user that posted each post
+                    firebaseModel.getUserByID(postEntity.userId) { user ->
+                        val post = Post(
+                            id = postEntity.id,
+                            userId = postEntity.userId,
+                            text = postEntity.text,
+                            imageUrls = postEntity.imageUrls,
+                            likesCount = likesCount,
+                            isLikedByUser = isLikedByUser,
+                            comments = comments.toMutableList(),
+                            timestamp = postEntity.timestamp,
+                            username = user?.username ?: "unknown",
+                            userProfilePicture = user?.profilePicture ?: ""
+                        )
+
+                        posts.add(post)
+                    }
+
+                    postEntity.timestamp.let {
                         if (latestTime < it) {
                             latestTime = it
                         }
@@ -47,9 +80,6 @@ class Model private constructor() {
                 }
 
                 Post.lastUpdated = latestTime
-
-                // Now fetch complete posts with related data
-                val posts = getCompletePostsFromLocalDb()
 
                 withContext(mainDispatcher) {
                     callback(posts)
@@ -75,116 +105,7 @@ class Model private constructor() {
         }
     }
 
-    // Helper function to get complete posts from local DB
-    private suspend fun getCompletePostsFromLocalDb(): MutableList<Post> {
-        val posts = mutableListOf<Post>()
-        val postEntities = database.postDao().getAllPosts()
 
-        for (postEntity in postEntities) {
-            // Get user data
-            val userEntity = database.userDao().getUserById(postEntity.userId)
-            val user = userEntity?.let {
-                User(
-                    id = it.id,
-                    username = it.username,
-                    profilePicture = it.profilePicture
-                )
-            } ?: User(id = "", username = "Unknown", profilePicture = "")
-
-            // Get comments
-            val commentEntities = database.commentDao().getCommentsForPost(postEntity.id)
-            val comments = commentEntities.map { commentEntity ->
-                val commentUser = database.userDao().getUserById(commentEntity.userId)
-                Comment(
-                    id = commentEntity.id,
-                    postId = commentEntity.postId,
-                    userId = commentEntity.userId,
-                    text = commentEntity.text,
-                    timestamp = commentEntity.timestamp,
-                    username = commentUser?.username ?: "Unknown",
-                    userProfilePicture = commentUser?.profilePicture ?: ""
-                )
-            }.toMutableList()
-
-            // Get likes
-            val likesCount = database.likeDao().getLikesCountForPost(postEntity.id)
-            val isLikedByUser = database.likeDao().isPostLikedByUser(postEntity.id, currentUserId)
-
-            // Create complete post
-            val post = Post(
-                id = postEntity.id,
-                userId = postEntity.userId,
-                text = postEntity.text,
-                imageUrls = postEntity.imageUrls,
-                timestamp = postEntity.timestamp,
-                likesCount = likesCount,
-                isLikedByUser = isLikedByUser,
-                comments = comments,
-                username = user.username,
-                userProfilePicture = user.profilePicture
-            )
-
-            posts.add(post)
-        }
-
-        return posts
-    }
-
-    // Get a single post by ID
-    fun getPostById(postId: String, callback: (Post?) -> Unit) {
-        coroutineScope.launch {
-            val postEntity = database.postDao().getPostById(postId)
-
-            if (postEntity != null) {
-                val userEntity = database.userDao().getUserById(postEntity.userId)
-                val user = userEntity?.let {
-                    User(
-                        id = it.id,
-                        username = it.username,
-                        profilePicture = it.profilePicture
-                    )
-                } ?: User(id = "", username = "Unknown", profilePicture = "")
-
-                val commentEntities = database.commentDao().getCommentsForPost(postEntity.id)
-                val comments = commentEntities.map { commentEntity ->
-                    val commentUser = database.userDao().getUserById(commentEntity.userId)
-                    Comment(
-                        id = commentEntity.id,
-                        postId = commentEntity.postId,
-                        userId = commentEntity.userId,
-                        text = commentEntity.text,
-                        timestamp = commentEntity.timestamp,
-                        username = commentUser?.username ?: "Unknown",
-                        userProfilePicture = commentUser?.profilePicture ?: ""
-                    )
-                }.toMutableList()
-
-                val likesCount = database.likeDao().getLikesCountForPost(postEntity.id)
-                val isLikedByUser = database.likeDao().isPostLikedByUser(postEntity.id, currentUserId)
-
-                val post = Post(
-                    id = postEntity.id,
-                    userId = postEntity.userId,
-                    text = postEntity.text,
-                    imageUrls = postEntity.imageUrls,
-                    timestamp = postEntity.timestamp,
-                    likesCount = likesCount,
-                    isLikedByUser = isLikedByUser,
-                    comments = comments,
-                    username = user.username,
-                    userProfilePicture = user.profilePicture
-                )
-
-                withContext(mainDispatcher) {
-                    callback(post)
-                }
-            } else {
-                withContext(mainDispatcher) {
-                    callback(null)
-                }
-            }
-        }
-    }
 
     // Add a new post
     fun addPost(post: Post, callback: (Boolean) -> Unit) {
@@ -234,27 +155,33 @@ class Model private constructor() {
     // Toggle like on a post
     fun toggleLike(postId: String, callback: (Boolean) -> Unit) {
         coroutineScope.launch {
-            val isLiked = database.likeDao().isPostLikedByUser(postId, currentUserId)
+            val isLiked = database.likeDao().isPostLikedByUser(postId, getCurrentUserId())
 
             if (isLiked) {
                 // Unlike
-                database.likeDao().deleteLike(postId, currentUserId)
-                firebaseModel.removeLike(postId, currentUserId)
+                database.likeDao().deleteLike(postId, getCurrentUserId())
+                firebaseModel.removeLike(postId, getCurrentUserId())
             } else {
                 // Like
                 val like = LikeEntity(
                     id = UUID.randomUUID().toString(),
-                    userId = currentUserId,
+                    userId = getCurrentUserId(),
                     postId = postId
                 )
                 database.likeDao().insertLike(like)
-                firebaseModel.addLike(postId, currentUserId)
+                firebaseModel.addLike(postId, getCurrentUserId())
             }
 
-            val newIsLiked = !isLiked
-
             withContext(mainDispatcher) {
-                callback(newIsLiked)
+                callback(true)
+            }
+        }.invokeOnCompletion { throwable ->
+            if (throwable != null) {
+                coroutineScope.launch {
+                    withContext(mainDispatcher) {
+                        callback(false)
+                    }
+                }
             }
         }
     }
@@ -262,28 +189,36 @@ class Model private constructor() {
     // Add a comment to a post
     fun addComment(comment: Comment, callback: (Boolean) -> Unit) {
         coroutineScope.launch {
-            val commentEntity = CommentEntity(
-                id = comment.id,
-                postId = comment.postId,
-                userId = comment.userId,
-                text = comment.text,
-                timestamp = comment.timestamp,
-            )
 
-            database.commentDao().insertComment(commentEntity)
 
-            // Also add to Firebase
-            withContext(mainDispatcher) {
-                firebaseModel.addComment(comment) { success ->
-                    callback(success)
+            firebaseModel.addComment(comment) { success ->
+
+                val commentEntity = CommentEntity(
+                    id = comment.id,
+                    postId = comment.postId,
+                    userId = comment.userId,
+                    text = comment.text,
+                    timestamp = comment.timestamp,
+                )
+
+                if (success) {
+                    coroutineScope.launch {
+                        database.commentDao().insertComment(commentEntity)
+                        withContext(mainDispatcher) {
+                            callback(true)
+                        }
+                    }
+                } else {
+                    callback(false)
                 }
             }
+
         }
     }
 
     fun getTasks(callback: (List<Task>) -> Unit) {
         coroutineScope.launch {
-            val tasks = database.taskDao().getAllTasks(currentUserId)
+            val tasks = database.taskDao().getAllTasks(getCurrentUserId())
             withContext(mainDispatcher) {
                 callback(tasks)
             }
@@ -339,5 +274,20 @@ class Model private constructor() {
                 callback(false)
             }
         }
+    }
+
+    // Get current user ID
+    fun getCurrentUserId(): String {
+        return userViewModel.getCurrentUserId() ?: "unknown_user_id"
+    }
+
+    // Get current user username
+    fun getCurrentUserUsername(): String {
+        return userViewModel.username.value ?: "unknown"
+    }
+
+    // Get current user profile picture
+    fun getCurrentUserImage(): String {
+        return userViewModel.profilePicture.value ?: ""
     }
 }

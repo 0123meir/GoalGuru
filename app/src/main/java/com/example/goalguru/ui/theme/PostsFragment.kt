@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.goalguru.PostsViewModel
 import com.example.goalguru.R
+import com.example.goalguru.model.Model
 import com.example.goalguru.model.Post
-import com.example.goalguru.model.PostEntity
 import java.util.UUID
 
 class PostsFragment : Fragment() {
@@ -58,22 +58,19 @@ class PostsFragment : Fragment() {
      fun addNewPost(text: String, imageUrls: List<String>) {
 
         val postId = UUID.randomUUID().toString()
-        val userId = "user_id_placeholder" // TODO: Replace with actual user ID from auth
-        val username = "username_placeholder" //TODO: Replace with actual username from auth
-         val userProfilePicture = "profile_picture_placeholder" // TODO: Replace with actual profile picture URL from auth
 
         // Create a Post object
         val newPost = Post(
             id = postId,
-            userId = userId,
+            userId = Model.shared.getCurrentUserId(),
             text = text,
             imageUrls = imageUrls,
             timestamp = System.currentTimeMillis(),
             likesCount = 0,
             isLikedByUser = false,
             comments = mutableListOf(),
-            username = username,
-            userProfilePicture = userProfilePicture
+            username = Model.shared.getCurrentUserUsername(),
+            userProfilePicture = Model.shared.getCurrentUserImage()
         )
 
         // Call the add post function

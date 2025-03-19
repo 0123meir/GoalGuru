@@ -1,16 +1,17 @@
 package com.example.goalguru
 
+import UserViewModel
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 
 class RegisterActivity : AppCompatActivity() {
-    //TODO REMOVE: Mock in-memory user storage
-    private val registeredUsers = mutableListOf<Pair<String, String>>() // Pair<email/username, password>
+    private val userViewModel: UserViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,16 +40,9 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            if (registeredUsers.any { it.first == email }) {
-                Toast.makeText(this, "Email already registered.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            //TODO UPDATE: Save the new user
-            registeredUsers.add(Pair(email, password))
+            userViewModel.registerUser(email, password, username)
             Toast.makeText(this, "Registration Successful", Toast.LENGTH_SHORT).show()
 
-            // return to sign-in screen
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
             finish()

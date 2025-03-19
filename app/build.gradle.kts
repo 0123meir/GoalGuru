@@ -77,7 +77,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics.ktx)
     implementation(libs.firebase.analytics)
-    implementation(libs.identity.jvm)
+    implementation(libs.firebase.auth.ktx)
     kapt(libs.glide.compiler)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.cardview)

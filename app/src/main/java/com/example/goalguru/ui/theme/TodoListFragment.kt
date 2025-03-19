@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.goalguru.R
 import com.example.goalguru.TasksAdapter
 import com.example.goalguru.databinding.NewEditTaskLayoutBinding
+import com.example.goalguru.model.Model
 import com.example.goalguru.model.Task
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -116,7 +117,7 @@ class TodoListFragment : Fragment() {
 
     private fun createTask(sheetBinding: NewEditTaskLayoutBinding, dialog: BottomSheetDialog) {
         val newTask = Task(
-            userId = "user_id_placeholder", // Replace with actual user ID from auth
+            userId = Model.shared.getCurrentUserId(),
             title = sheetBinding.taskGoalInput.text.toString(),
             description = sheetBinding.taskDescriptionInput.text.toString(),
             deadline = sheetBinding.taskDeadlineInput.text.toString().toIntOrNull() ?: 0,

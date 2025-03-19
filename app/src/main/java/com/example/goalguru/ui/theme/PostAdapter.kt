@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ import com.bumptech.glide.Glide
 import com.example.goalguru.R
 import com.example.goalguru.base.MyApplication
 import com.example.goalguru.model.Comment
+import com.example.goalguru.model.Model
 import com.example.goalguru.model.Post
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
@@ -31,7 +33,6 @@ import java.util.UUID
 
 class PostAdapter(
     private var posts: MutableList<Post> = mutableListOf(),
-    private val currentUserId: String = "user_id_placeholder" // This would come from your auth system
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     fun set(posts: MutableList<Post>) {
@@ -74,28 +75,28 @@ class PostAdapter(
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        val post = posts.get(position)
+        val post = posts[position]
         val context = holder.itemView.context
 
-        if (!post.userProfilePicture.isNullOrEmpty()) {
+        if (post.userProfilePicture.isNotEmpty()) {
             Glide.with(context)
                 .load(post.userProfilePicture)
                 .error(R.drawable.ic_launcher_foreground)
                 .circleCrop()
                 .into(holder.profilePhoto)
         } else {
-            holder.profilePhoto.setImageResource(R.drawable.ic_launcher_foreground)
+            holder.profilePhoto.setImageResource(R.drawable.default_profile)
         }
-
+        Log.d("post: ", post.toString())
         holder.userName.text = post.username
         holder.postText.text = post.text
 
         // Format and set the timestamp
-        val formattedDate = formatTimestamp(post.timestamp?:0)
+        val formattedDate = formatTimestamp(post.timestamp ?: 0)
         holder.publishDate.text = formattedDate
 
         // Show or hide edit/delete buttons based on whether current user is the post creator
-        if (true) { // TODO: change to post.userId == currentUserId
+        if (post.userId == Model.shared.getCurrentUserId()) {
             holder.postActionsContainer.visibility = View.VISIBLE
 
             // Set up edit button click listener
@@ -113,10 +114,8 @@ class PostAdapter(
 
         updateLikeCount(holder, post)
 
-        // Set up like button state and click listener
         setupLikeButton(holder, post, position)
 
-        // Set up images based on how many the post has
         setupPostImages(holder, post)
 
         // Set up comments recycler view
@@ -128,7 +127,7 @@ class PostAdapter(
         holder.commentAction.setOnClickListener {
             toggleCommentsSection(holder, post)
         }
-        //set up comments count
+        // Set up comments count
         holder.commentsCount.text = "${post.comments.size}"
 
         // Enable/disable submit comment button based on input
@@ -150,32 +149,27 @@ class PostAdapter(
             val commentText = holder.commentInput.text.toString().trim()
 
             if (commentText.isNotEmpty()) {
-                val currentUserName = "Current User" // TODO: Replace with actual username when DB is ready
-                val currentUserId = "user_id_placeholder" // TODO: Replace with actual user ID when DB is ready
-                val currentUserPicture = "https://picsum.photos/id/${(100..999).random()}/500/500" // TODO: Replace with actual user ID when DB is ready
-
                 // Create and add the new comment
                 val newComment = Comment(
-                    userId = currentUserId,
-                    username = currentUserName,
+                    userId = Model.shared.getCurrentUserId(),
+                    username = Model.shared.getCurrentUserUsername(),
                     text = commentText,
                     id = UUID.randomUUID().toString(),
-                    postId = UUID.randomUUID().toString(),
+                    postId = post.id,
                     timestamp = System.currentTimeMillis(),
-                    userProfilePicture = currentUserPicture
+                    userProfilePicture = Model.shared.getCurrentUserImage()
                 )
-
-                // save the comment to the database
+                Log.d("comment", "comment: $newComment")
+                // Save the comment to the database
                 Model.shared.addComment(newComment) { success ->
                     if (success) {
-                        holder.commentInput.text.clear()
+                        post.comments.add(newComment)
                         commentAdapter.notifyItemInserted(post.comments.size - 1)
+                        holder.commentInput.text.clear()
                     } else {
                         Toast.makeText(MyApplication.Globals.context, "Failed to add comment", Toast.LENGTH_SHORT).show()
                     }
                 }
-
-
             }
         }
     }
@@ -360,14 +354,13 @@ class PostAdapter(
 
         // Set click listener for like button
         holder.likeAction.setOnClickListener {
-            toggleLike(post, position)
+            toggleLike(post, holder, position)
             // Update the button appearance immediately
             setupLikeButton(holder, post, position)
         }
     }
 
-    private fun toggleLike(post: Post, position: Int) {
-
+    private fun toggleLike(post: Post, holder: PostViewHolder, position: Int) {
         if (post.isLikedByUser) {
             post.isLikedByUser = false
             post.likesCount = (post.likesCount - 1).coerceAtLeast(0)
@@ -376,15 +369,35 @@ class PostAdapter(
             post.likesCount++
         }
 
+        // Update the like icon and like count immediately
+        if (post.isLikedByUser) {
+            holder.likeIcon.setImageResource(R.drawable.ic_like_filled)
+        } else {
+            holder.likeIcon.setImageResource(R.drawable.ic_like)
+        }
+        updateLikeCount(holder, post)
+
         Model.shared.toggleLike(post.id) { success ->
-            if (success) {
-                notifyItemChanged(position)
-            } else {
+            if (!success) {
+                // Revert the like state if the operation failed
+                if (post.isLikedByUser) {
+                    post.isLikedByUser = false
+                    post.likesCount = (post.likesCount - 1).coerceAtLeast(0)
+                } else {
+                    post.isLikedByUser = true
+                    post.likesCount++
+                }
+                // Update the like icon and like count again
+                if (post.isLikedByUser) {
+                    holder.likeIcon.setImageResource(R.drawable.ic_like_filled)
+                } else {
+                    holder.likeIcon.setImageResource(R.drawable.ic_like)
+                }
+                updateLikeCount(holder, post)
                 Toast.makeText(MyApplication.Globals.context, "Failed to toggle like", Toast.LENGTH_SHORT).show()
             }
         }
     }
-
 
     private fun updateLikeCount(holder: PostViewHolder, post: Post) {
         // Format like count text based on number of likes

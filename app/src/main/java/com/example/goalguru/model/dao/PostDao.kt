@@ -18,17 +18,9 @@ interface PostDao {
     @Query("SELECT * FROM posts")
     suspend fun getAllPosts(): MutableList<PostEntity>
 
-    // Add these new functions
-    @Query("SELECT * FROM posts WHERE id = :postId")
-    suspend fun getPostById(postId: String): PostEntity?
-
     @Query("DELETE FROM posts WHERE id = :postId")
     suspend fun deletePostById(postId: String)
 
-    // Get posts with related data
-    @Transaction
-    @Query("SELECT * FROM posts ORDER BY timestamp DESC")
-    suspend fun getPostsWithRelatedData(): List<PostEntity>
 
     @Query("UPDATE posts SET text = :text WHERE id = :postId")
     suspend fun updatePostText(postId: String, text: String): Int

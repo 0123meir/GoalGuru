@@ -1,5 +1,6 @@
 package com.example.goalguru.model
 
+import UserViewModel
 import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
@@ -9,7 +10,7 @@ import java.util.UUID
 
 typealias PostsCallback = (List<PostEntity>) -> Unit
 
-class FirebaseModel {
+class FirebaseModel(private val userViewModel: UserViewModel? = null) {
 
     private val database = Firebase.firestore
 
@@ -33,9 +34,8 @@ class FirebaseModel {
             }
     }
 
-    fun getPosts(sinceLastUpdated: Long, callback: PostsCallback) {
+    fun getPosts( callback: PostsCallback) {
         database.collection("posts")
-            .whereGreaterThanOrEqualTo(Post.LAST_UPDATED, sinceLastUpdated)
             .get()
             .addOnCompleteListener {
                 when (it.isSuccessful) {
@@ -56,6 +56,27 @@ class FirebaseModel {
         database.collection("posts").document(post.id).set(post.json)
             .addOnCompleteListener {
                 callback(it.isSuccessful)
+            }
+    }
+
+    fun saveUserToFirestore(userUid: String?, email: String, username: String, profilePicture: String) {
+        if (userUid == null) {
+            return
+        }
+
+        val userMap = hashMapOf(
+            "uid" to userUid,
+            "email" to email,
+            "username" to username,
+            "profilePicture" to profilePicture
+        )
+        database.collection("users").document(userUid)
+            .set(userMap)
+            .addOnSuccessListener {
+                Log.d("UserViewModel", "User added to Firestore")
+            }
+            .addOnFailureListener { e ->
+                Log.d("UserViewModel", "Error adding user to Firestore", e)
             }
     }
 
@@ -144,50 +165,24 @@ class FirebaseModel {
                 callback(it.isSuccessful)
             }
     }
+
+    fun getUserByID(userId: String, callback: (User?) -> Unit) {
+        database.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val user = User(
+                        id = document.getString("uid") ?: "",
+                        email = document.getString("email") ?: "",
+                        username = document.getString("username") ?: "",
+                        profilePicture = document.getString("profilePicture") ?: ""
+                    )
+                    callback(user)
+                } else {
+                    callback(null)
+                }
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
+    }
 }
-
-    //todo: Liraz - delete if not needed when creating profile page
-//    fun addUser(user: User, callback: (Boolean) -> Unit) {
-//        val userMap = hashMapOf(
-//            "id" to user.id,
-//            "username" to user.username,
-//            "profilePicture" to user.profilePicture
-//        )
-//
-//        database.collection("users").document(user.id).set(userMap)
-//            .addOnCompleteListener {
-//                callback(it.isSuccessful)
-//            }
-//    }
-
-//    fun getUser(userId: String, callback: (User?) -> Unit) {
-//        database.collection("users").document(userId).get()
-//            .addOnCompleteListener {
-//                if (it.isSuccessful) {
-//                    val user = it.result.toObject(User::class.java)
-//                    callback(user)
-//                } else {
-//                    callback(null)
-//                }
-//            }
-//    }
-//
-//    fun updateUser(userId: String, newUsername: String, newProfilePicture: String, callback: (Boolean) -> Unit) {
-//        val userMap = hashMapOf(
-//            "username" to newUsername,
-//            "profilePicture" to newProfilePicture
-//        )
-//
-//        database.collection("users").document(userId).update(userMap as Map<String, Any>)
-//            .addOnCompleteListener {
-//                callback(it.isSuccessful)
-//            }
-//    }
-//
-//    fun deleteUser(userId: String, callback: (Boolean) -> Unit) {
-//        database.collection("users").document(userId).delete()
-//            .addOnCompleteListener {
-//                callback(it.isSuccessful)
-//            }
-//    }
-//}
