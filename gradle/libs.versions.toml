@@ -1,5 +1,8 @@
 [versions]
 agp = "8.8.0"
+cloudinaryAndroidPreprocessVersion = "3.0.2"
+cloudinaryAndroidDownload = "3.0.2"
+cloudinaryAndroid = "1.31.0"
 gson = "2.10.1"
 kotlin = "2.0.0"
 coreKtx = "1.15.0"
@@ -29,11 +32,15 @@ viewpager2Version = "1.1.0"
 firebaseCommonKtx = "21.0.0"
 firebaseFirestoreKtx = "25.1.2"
 firebaseAuthKtx = "23.2.0"
+firebaseStorageKtx = "21.0.1"
 
 [libraries]
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
 androidx-viewpager2-v110 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2Version" }
+cloudinary-android = { module = "com.cloudinary:cloudinary-android", version.ref = "cloudinaryAndroid" }
+cloudinary-android-download = { module = "com.cloudinary:cloudinary-android-download", version.ref = "cloudinaryAndroidDownload" }
+cloudinary-cloudinary-android-preprocess = { module = "com.cloudinary:cloudinary-android-preprocess", version.ref = "cloudinaryAndroidPreprocessVersion" }
 google-material = { module = "com.google.android.material:material", version.ref = "material" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment-ktx" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
@@ -69,6 +76,7 @@ room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRunti
 firebase-common-ktx = { group = "com.google.firebase", name = "firebase-common-ktx", version.ref = "firebaseCommonKtx" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
+firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

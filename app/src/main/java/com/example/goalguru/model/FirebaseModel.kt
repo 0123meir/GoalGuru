@@ -25,6 +25,7 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
 
     fun getPosts(sinceLastUpdated: Long, callback: PostsCallback) {
         database.collection("posts")
+            .whereGreaterThanOrEqualTo("timestamp", sinceLastUpdated)
             .get()
             .addOnCompleteListener {
                 when (it.isSuccessful) {
@@ -68,6 +69,44 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             }
     }
 
+    fun updateUsername(userUid: String?, username: String) {
+        if (userUid == null) {
+            return
+        }
+
+        val userMap = hashMapOf(
+            "username" to username
+        ) as Map<String, Any>
+
+        database.collection("users").document(userUid)
+            .update(userMap)
+            .addOnSuccessListener {
+                Log.d("UserViewModel", "Username updated in Firestore")
+            }
+            .addOnFailureListener { e ->
+                Log.d("UserViewModel", "Error updating username in Firestore", e)
+            }
+    }
+
+    fun updateProfilePic(userUid: String?, profilePicture: String) {
+        if (userUid == null) {
+            return
+        }
+
+        val userMap = hashMapOf(
+            "profilePicture" to profilePicture
+        ) as Map<String, Any>
+
+        database.collection("users").document(userUid)
+            .update(userMap)
+            .addOnSuccessListener {
+                Log.d("UserViewModel", "Profile picture updated in Firestore")
+            }
+            .addOnFailureListener { e ->
+                Log.d("UserViewModel", "Error updating profile picture in Firestore", e)
+            }
+    }
+
     fun getCurrentUserUsername(callback: (String?) -> Unit) {
         val userId = userViewModel?.getCurrentUserId() ?: return
         database.collection("users").document(userId).get()
@@ -89,6 +128,21 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             .addOnSuccessListener { document ->
                 if (document != null && document.exists()) {
                     callback(document.getString("profilePicture"))
+                } else {
+                    callback(null)
+                }
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
+    }
+
+    fun getCurrentUserEmail(callback: (String?) -> Unit) {
+        val userId = userViewModel?.getCurrentUserId() ?: return
+        database.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    callback(document.getString("email"))
                 } else {
                     callback(null)
                 }

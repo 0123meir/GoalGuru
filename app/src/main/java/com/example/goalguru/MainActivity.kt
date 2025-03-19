@@ -9,7 +9,7 @@ import com.google.android.material.imageview.ShapeableImageView
 import com.google.firebase.FirebaseApp
 
 //TODO: add when fragments are implemented
-//import com.example.goalguru.ui.theme.ProfileFragment
+import com.example.goalguru.ui.theme.UserProfileFragment
 import com.example.goalguru.ui.theme.TodoListFragment
 
 class MainActivity : AppCompatActivity() {
@@ -44,7 +44,12 @@ class MainActivity : AppCompatActivity() {
             AppUtils.showExitConfirmationDialog(this)
         }
         profilePhoto.setOnClickListener {
-//            loadFragment(ProfileFragment())
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+            if (currentFragment is UserProfileFragment) {
+                loadFragment(ForumFragment())
+            } else {
+                loadFragment(UserProfileFragment())
+            }
         }
     }
 

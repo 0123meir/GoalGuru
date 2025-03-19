@@ -71,6 +71,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.storage.ktx)
     kapt(libs.glide.compiler)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.cardview)
@@ -83,11 +84,16 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.gson)
+    implementation("com.cloudinary:cloudinary-android:3.0.2")
+    implementation("com.cloudinary:cloudinary-android-preprocess:3.0.2")
 
     implementation(libs.room.runtime)
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 }
-kapt {
-    correctErrorTypes = true
+
+repositories {
+    google()
+    mavenCentral()
+    maven { url = uri("https://repo.cloudinary.com/") }
 }
