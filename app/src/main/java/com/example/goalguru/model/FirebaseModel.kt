@@ -2,11 +2,12 @@ package com.example.goalguru.model
 
 import UserViewModel
 import android.util.Log
-import androidx.activity.viewModels
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.auth.User
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
+import java.util.UUID
 
 typealias PostsCallback = (List<PostEntity>) -> Unit
 
@@ -22,10 +23,20 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
         database.firestoreSettings = setting
     }
 
+    fun updatePost(postId: String, newText: String, callback: (Boolean) -> Unit) {
+        database.collection("posts").document(postId)
+            .update("text", newText)
+            .addOnSuccessListener {
+                callback(true)
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirebaseModel", "Error updating post", e)
+                callback(false)
+            }
+    }
 
     fun getPosts(sinceLastUpdated: Long, callback: PostsCallback) {
         database.collection("posts")
-            .whereGreaterThanOrEqualTo("timestamp", sinceLastUpdated)
             .get()
             .addOnCompleteListener {
                 when (it.isSuccessful) {
@@ -36,13 +47,14 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
                         }
                         callback(posts)
                     }
+
                     false -> callback(mutableListOf())
                 }
             }
     }
 
     fun addPost(post: Post, callback: (Boolean) -> Unit) {
-        database.collection("posts").add(post.json)
+        database.collection("posts").document(post.id).set(post.json)
             .addOnCompleteListener {
                 callback(it.isSuccessful)
             }
@@ -137,12 +149,74 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             }
     }
 
-    fun getCurrentUserEmail(callback: (String?) -> Unit) {
-        val userId = userViewModel?.getCurrentUserId() ?: return
+    fun addComment(comment: Comment, callback: (Boolean) -> Unit) {
+        val commentMap = hashMapOf(
+            "id" to comment.id,
+            "postId" to comment.postId,
+            "userId" to comment.userId,
+            "text" to comment.text,
+            "timestamp" to comment.timestamp,
+            "username" to comment.username,
+            "userProfilePicture" to comment.userProfilePicture
+        )
+
+        database.collection("comments").document(comment.id).set(commentMap)
+            .addOnCompleteListener {
+                callback(it.isSuccessful)
+            }
+    }
+
+    fun createTask(task: Task, callback: (Boolean) -> Unit) {
+        val taskMap = hashMapOf(
+            "id" to task.id,
+            "userId" to task.userId,
+            "title" to task.title,
+            "description" to task.description,
+            "deadline" to task.deadline,
+            "isChecked" to task.isChecked
+        )
+
+        database.collection("tasks").document(task.id).set(taskMap)
+            .addOnCompleteListener {
+                callback(it.isSuccessful)
+            }
+    }
+
+    fun updateTask(taskId: String, newTask: Task, callback: (Boolean) -> Unit) {
+        val taskMap = hashMapOf(
+            "id" to newTask.id,
+            "userId" to newTask.userId,
+            "title" to newTask.title,
+            "description" to newTask.description,
+            "deadline" to newTask.deadline,
+            "isChecked" to newTask.isChecked
+        )
+
+        database.collection("tasks").document(taskId).set(taskMap)
+            .addOnCompleteListener {
+                callback(it.isSuccessful)
+            }
+    }
+
+    // Add this function to FirebaseModel.kt
+    fun deleteTask(taskId: String, callback: (Boolean) -> Unit) {
+        database.collection("tasks").document(taskId).delete()
+            .addOnCompleteListener {
+                callback(it.isSuccessful)
+            }
+    }
+
+    fun getUserByID(userId: String, callback: (User?) -> Unit) {
         database.collection("users").document(userId).get()
             .addOnSuccessListener { document ->
                 if (document != null && document.exists()) {
-                    callback(document.getString("email"))
+                    val user = User(
+                        id = document.getString("uid") ?: "",
+                        email = document.getString("email") ?: "",
+                        username = document.getString("username") ?: "",
+                        profilePicture = document.getString("profilePicture") ?: ""
+                    )
+                    callback(user)
                 } else {
                     callback(null)
                 }

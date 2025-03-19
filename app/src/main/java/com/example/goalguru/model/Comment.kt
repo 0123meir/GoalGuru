@@ -11,8 +11,6 @@ data class CommentEntity(
     val userId: String,
     val text: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val username: String,
-    val userProfilePicture: String
 )
 
 data class Comment(

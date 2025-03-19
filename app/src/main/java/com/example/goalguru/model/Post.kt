@@ -5,9 +5,7 @@ import android.util.Log
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.goalguru.base.MyApplication
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
-import java.util.UUID
 
 @Entity(tableName = "posts")
 data class PostEntity(
@@ -51,7 +49,6 @@ data class Post(
         private const val LOCAL_LAST_UPDATED = "posts_last_updated"
 
         fun fromJSON(json: Map<String, Any>): PostEntity {
-            Log.e("Post", json.toString())
             val id = json[KEY_ID] as String
             val userId = json[KEY_USER_ID] as String
             val text = json[KEY_TEXT] as String

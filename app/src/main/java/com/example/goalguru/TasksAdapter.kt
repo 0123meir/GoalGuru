@@ -8,13 +8,24 @@ import android.widget.CheckBox
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.goalguru.model.Model
 import com.example.goalguru.model.Task
 
 class TasksAdapter(
     private val context: Context,
-    private val onTaskClick: (Task, Int) -> Unit
+    private val onItemClicked: (Task, Int) -> Unit
 ) : RecyclerView.Adapter<TasksAdapter.TaskViewHolder>() {
+
+    private val tasks = mutableListOf<Task>()
+
+    fun getTask(position: Int): Task {
+        return tasks[position]
+    }
+
+    fun updateTasks(newTasks: List<Task>) {
+        tasks.clear()
+        tasks.addAll(newTasks)
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.task_row, parent, false)
@@ -22,11 +33,15 @@ class TasksAdapter(
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        val task = Model.shared.tasks[position]
+        val task = tasks[position]
         holder.bind(task, position)
+
+        holder.itemView.setOnClickListener {
+            onItemClicked(task, position)
+        }
     }
 
-    override fun getItemCount(): Int = Model.shared.tasks.size
+    override fun getItemCount() = tasks.size
 
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val goalTextView: TextView = itemView.findViewById(R.id.goal_name)
@@ -42,7 +57,7 @@ class TasksAdapter(
             isTaskDone.isChecked = task.isChecked
 
             cardView.setOnClickListener {
-                onTaskClick(task, position)
+                onItemClicked(task, position)
             }
         }
 

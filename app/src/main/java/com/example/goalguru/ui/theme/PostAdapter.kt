@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +19,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.goalguru.R
+import com.example.goalguru.base.MyApplication
 import com.example.goalguru.model.Comment
+import com.example.goalguru.model.Model
 import com.example.goalguru.model.Post
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
@@ -30,7 +33,6 @@ import java.util.UUID
 
 class PostAdapter(
     private var posts: MutableList<Post> = mutableListOf(),
-    private val currentUserId: String = "user_id_placeholder" // This would come from your auth system
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     fun set(posts: MutableList<Post>) {
@@ -73,33 +75,33 @@ class PostAdapter(
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        val post = posts.get(position)
+        val post = posts[position]
         val context = holder.itemView.context
 
-        if (!post.userProfilePicture.isNullOrEmpty()) {
+        if (post.userProfilePicture.isNotEmpty()) {
             Glide.with(context)
                 .load(post.userProfilePicture)
                 .error(R.drawable.ic_launcher_foreground)
                 .circleCrop()
                 .into(holder.profilePhoto)
         } else {
-            holder.profilePhoto.setImageResource(R.drawable.ic_launcher_foreground)
+            holder.profilePhoto.setImageResource(R.drawable.default_profile)
         }
-
+        Log.d("post: ", post.toString())
         holder.userName.text = post.username
         holder.postText.text = post.text
 
         // Format and set the timestamp
-        val formattedDate = formatTimestamp(post.timestamp?:0)
+        val formattedDate = formatTimestamp(post.timestamp ?: 0)
         holder.publishDate.text = formattedDate
 
         // Show or hide edit/delete buttons based on whether current user is the post creator
-        if (true) { // TODO: change to post.userId == currentUserId
+        if (post.userId == Model.shared.getCurrentUserId()) {
             holder.postActionsContainer.visibility = View.VISIBLE
 
             // Set up edit button click listener
             holder.btnEditPost.setOnClickListener {
-                onEditClick(post,holder, position)
+                onEditClick(post, holder, position)
             }
 
             // Set up delete button click listener
@@ -112,10 +114,8 @@ class PostAdapter(
 
         updateLikeCount(holder, post)
 
-        // Set up like button state and click listener
         setupLikeButton(holder, post, position)
 
-        // Set up images based on how many the post has
         setupPostImages(holder, post)
 
         // Set up comments recycler view
@@ -127,7 +127,7 @@ class PostAdapter(
         holder.commentAction.setOnClickListener {
             toggleCommentsSection(holder, post)
         }
-        //set up comments count
+        // Set up comments count
         holder.commentsCount.text = "${post.comments.size}"
 
         // Enable/disable submit comment button based on input
@@ -149,27 +149,27 @@ class PostAdapter(
             val commentText = holder.commentInput.text.toString().trim()
 
             if (commentText.isNotEmpty()) {
-                val currentUserName = "Current User" // Replace with actual username when DB is ready
-
                 // Create and add the new comment
                 val newComment = Comment(
-                    userId = currentUserId,
-                    username = currentUserName,
+                    userId = Model.shared.getCurrentUserId(),
+                    username = Model.shared.getCurrentUserUsername(),
                     text = commentText,
                     id = UUID.randomUUID().toString(),
-                    postId = UUID.randomUUID().toString(),
+                    postId = post.id,
                     timestamp = System.currentTimeMillis(),
-                    userProfilePicture = "https://picsum.photos/id/${(100..999).random()}/500/500"
+                    userProfilePicture = Model.shared.getCurrentUserImage()
                 )
-
-                // Add comment to post's comments list
-                post.comments.add(newComment)
-
-                // TODO: save the comment to the database here
-
-                // Update the UI
-                holder.commentInput.text.clear()
-                commentAdapter.notifyItemInserted(post.comments.size - 1)
+                Log.d("comment", "comment: $newComment")
+                // Save the comment to the database
+                Model.shared.addComment(newComment) { success ->
+                    if (success) {
+                        post.comments.add(newComment)
+                        commentAdapter.notifyItemInserted(post.comments.size - 1)
+                        holder.commentInput.text.clear()
+                    } else {
+                        Toast.makeText(MyApplication.Globals.context, "Failed to add comment", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
     }
@@ -186,89 +186,110 @@ class PostAdapter(
                 mutablePosts.removeAt(position)
                 posts = mutablePosts
 
-                // TODO: Delete post from database
-
-                notifyItemRemoved(position)
-                Toast.makeText(context, "Post deleted successfully!", Toast.LENGTH_SHORT).show()
+                // Delete post from database
+                Model.shared.deletePost(post.id) { success ->
+                    if (success) {
+                        notifyItemRemoved(position)
+                        Toast.makeText(context, "Post deleted successfully!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Failed to delete post", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
-
     private fun onEditClick(post: Post, holder : PostViewHolder, position: Int) {
 
-            // Get the Dialog
-            val dialog = Dialog(holder.itemView.context)
-            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-            dialog.setContentView(R.layout.dialog_edit_post)
-            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        // Get the Dialog
+        val dialog = Dialog(holder.itemView.context)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_edit_post)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
 
-            // Get views from dialog
-            val etEditPostText: TextInputEditText = dialog.findViewById(R.id.et_edit_post_text)
-            val btnCancelEdit: MaterialButton = dialog.findViewById(R.id.btn_cancel_edit)
-            val btnSaveEdit: MaterialButton = dialog.findViewById(R.id.btn_save_edit)
+        // Get views from dialog
+        val etEditPostText: TextInputEditText = dialog.findViewById(R.id.et_edit_post_text)
+        val btnCancelEdit: MaterialButton = dialog.findViewById(R.id.btn_cancel_edit)
+        val btnSaveEdit: MaterialButton = dialog.findViewById(R.id.btn_save_edit)
 
-            // Set up image previews
-            val editImagePreview1: ImageView = dialog.findViewById(R.id.edit_image_preview_1)
-            val editImagePreview2: ImageView = dialog.findViewById(R.id.edit_image_preview_2)
-            val editImagePreview3: ImageView = dialog.findViewById(R.id.edit_image_preview_3)
+        // Set up image previews
+        val editImagePreview1: ImageView = dialog.findViewById(R.id.edit_image_preview_1)
+        val editImagePreview2: ImageView = dialog.findViewById(R.id.edit_image_preview_2)
+        val editImagePreview3: ImageView = dialog.findViewById(R.id.edit_image_preview_3)
 
-            // Populate form with existing post data
-            etEditPostText.setText(post.text)
+        // Populate form with existing post data
+        etEditPostText.setText(post.text)
 
-            // Show existing images if any
-            if (post.imageUrls.isNotEmpty()) {
-                editImagePreview1.visibility = View.VISIBLE
-                Glide.with(dialog.context)
-                    .load(post.imageUrls[0])
-                    .error(R.drawable.ic_launcher_foreground)
-                    .into(editImagePreview1)
+        // Show existing images if any
+        if (post.imageUrls.isNotEmpty()) {
+            editImagePreview1.visibility = View.VISIBLE
+            Glide.with(dialog.context)
+                .load(post.imageUrls[0])
+                .error(R.drawable.ic_launcher_foreground)
+                .into(editImagePreview1)
+        }
+
+        if (post.imageUrls.size > 1) {
+            editImagePreview2.visibility = View.VISIBLE
+            Glide.with(dialog.context)
+                .load(post.imageUrls[1])
+                .error(R.drawable.ic_launcher_foreground)
+                .into(editImagePreview2)
+        }
+
+        if (post.imageUrls.size > 2) {
+            editImagePreview3.visibility = View.VISIBLE
+            Glide.with(dialog.context)
+                .load(post.imageUrls[2])
+                .error(R.drawable.ic_launcher_foreground)
+                .into(editImagePreview3)
+        }
+
+        // Set up button listeners
+        btnCancelEdit.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        btnSaveEdit.setOnClickListener {
+            val updatedText = etEditPostText.text.toString().trim()
+
+            if (updatedText.isEmpty()) {
+                Toast.makeText(dialog.context, "post text cannot be empty", Toast.LENGTH_SHORT)
+                    .show()
             }
+            if (updatedText.length > 200) {
+                Toast.makeText(
+                    dialog.context,
+                    "text length must be under 200 characters",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-            if (post.imageUrls.size > 1) {
-                editImagePreview2.visibility = View.VISIBLE
-                Glide.with(dialog.context)
-                    .load(post.imageUrls[1])
-                    .error(R.drawable.ic_launcher_foreground)
-                    .into(editImagePreview2)
-            }
+            } else {
+                post.text = updatedText
 
-            if (post.imageUrls.size > 2) {
-                editImagePreview3.visibility = View.VISIBLE
-                Glide.with(dialog.context)
-                    .load(post.imageUrls[2])
-                    .error(R.drawable.ic_launcher_foreground)
-                    .into(editImagePreview3)
-            }
+                Model.shared.updatePost(post.id, updatedText) { success ->
+                    if (success) {
+                        notifyItemChanged(position)
+                    } else {
+                        Toast.makeText(dialog.context, "post update failed", Toast.LENGTH_SHORT)
+                            .show()
 
-            // Set up button listeners
-            btnCancelEdit.setOnClickListener {
-                dialog.dismiss()
-            }
-
-            btnSaveEdit.setOnClickListener {
-                val updatedText = etEditPostText.text.toString().trim()
-
-                if (updatedText.isEmpty()) {
-                    Toast.makeText(dialog.context, "post text cannot be empty", Toast.LENGTH_SHORT).show()
-                }
-                if(updatedText.length > 200) {
-                    Toast.makeText(dialog.context, "text length must be under 200 characters",Toast.LENGTH_SHORT).show()
-
-                } else {
-                    post.text = updatedText
-
-                    // TODO: Update post in database
+                    }
 
                     notifyItemChanged(position)
                     dialog.dismiss()
-                    Toast.makeText(dialog.context, "Post updated successfully!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(dialog.context, "Post updated successfully!", Toast.LENGTH_SHORT)
+                        .show()
 
                 }
             }
 
             dialog.show()
         }
+    }
 
 
     private fun toggleCommentsSection(holder: PostViewHolder, post: Post) {
@@ -333,14 +354,13 @@ class PostAdapter(
 
         // Set click listener for like button
         holder.likeAction.setOnClickListener {
-            toggleLike(post, position)
+            toggleLike(post, holder, position)
             // Update the button appearance immediately
             setupLikeButton(holder, post, position)
         }
     }
 
-    private fun toggleLike(post: Post, position: Int) {
-
+    private fun toggleLike(post: Post, holder: PostViewHolder, position: Int) {
         if (post.isLikedByUser) {
             post.isLikedByUser = false
             post.likesCount = (post.likesCount - 1).coerceAtLeast(0)
@@ -349,10 +369,34 @@ class PostAdapter(
             post.likesCount++
         }
 
-        // TODO: Update like status in the database here
+        // Update the like icon and like count immediately
+        if (post.isLikedByUser) {
+            holder.likeIcon.setImageResource(R.drawable.ic_like_filled)
+        } else {
+            holder.likeIcon.setImageResource(R.drawable.ic_like)
+        }
+        updateLikeCount(holder, post)
 
-        // Notify adapter that this item has changed
-        notifyItemChanged(position)
+        Model.shared.toggleLike(post.id) { success ->
+            if (!success) {
+                // Revert the like state if the operation failed
+                if (post.isLikedByUser) {
+                    post.isLikedByUser = false
+                    post.likesCount = (post.likesCount - 1).coerceAtLeast(0)
+                } else {
+                    post.isLikedByUser = true
+                    post.likesCount++
+                }
+                // Update the like icon and like count again
+                if (post.isLikedByUser) {
+                    holder.likeIcon.setImageResource(R.drawable.ic_like_filled)
+                } else {
+                    holder.likeIcon.setImageResource(R.drawable.ic_like)
+                }
+                updateLikeCount(holder, post)
+                Toast.makeText(MyApplication.Globals.context, "Failed to toggle like", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun updateLikeCount(holder: PostViewHolder, post: Post) {
