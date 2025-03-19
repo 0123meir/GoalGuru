@@ -33,6 +33,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    packaging {
+        resources {
+            excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+        }
+    }
     kotlinOptions {
         jvmTarget = "11"
         languageVersion = "1.9"
@@ -68,8 +74,9 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.firebase.common.ktx)
     implementation(libs.firebase.firestore.ktx)
-    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
-    implementation("com.google.firebase:firebase-analytics")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics.ktx)
+    implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth.ktx)
     kapt(libs.glide.compiler)
     implementation(libs.androidx.viewpager2)
