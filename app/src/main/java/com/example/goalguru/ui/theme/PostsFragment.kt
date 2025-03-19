@@ -1,11 +1,13 @@
 package com.example.goalguru.ui.theme
 
+import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -13,12 +15,20 @@ import com.example.goalguru.PostsViewModel
 import com.example.goalguru.R
 import com.example.goalguru.model.Model
 import com.example.goalguru.model.Post
-import java.util.UUID
+import com.example.goalguru.model.PostEntity
 
-class PostsFragment : Fragment() {
+class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
+
     private var postType: String? = null
     private var postAdapter: PostAdapter? = null
     private var viewModel: PostsViewModel? = null
+    private lateinit var dialogHandler: PostDialogHandler
+
+    private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            dialogHandler.addImage(it)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,15 +47,15 @@ class PostsFragment : Fragment() {
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        postAdapter = PostAdapter(viewModel?.posts ?: mutableListOf())
-
+        postAdapter = PostAdapter(viewModel?.posts ?: mutableListOf(), this)
         recyclerView.adapter = postAdapter
+
+        dialogHandler = PostDialogHandler(requireContext())
 
         getAllPosts()
 
         return view
     }
-
 
     private fun getAllPosts() {
         Model.shared.getPosts {
@@ -55,48 +65,47 @@ class PostsFragment : Fragment() {
         }
     }
 
-     fun addNewPost(text: String, imageUrls: List<String>) {
+    fun addNewPost() {
+        dialogHandler.showPostDialog(null, getContent, this)
+    }
 
-        val postId = UUID.randomUUID().toString()
-
-        // Create a Post object
-        val newPost = Post(
-            id = postId,
-            userId = Model.shared.getCurrentUserId(),
-            text = text,
-            imageUrls = imageUrls,
-            timestamp = System.currentTimeMillis(),
-            likesCount = 0,
-            isLikedByUser = false,
-            comments = mutableListOf(),
-            username = Model.shared.getCurrentUserUsername(),
-            userProfilePicture = Model.shared.getCurrentUserImage()
+    fun editPost(updatedPost: Post, position: Int) {
+        val postEntity = PostEntity(
+            id = updatedPost.id,
+            userId = updatedPost.userId,
+            text = updatedPost.text,
+            imageUrls = updatedPost.imageUrls,
+            timestamp = updatedPost.timestamp ?: System.currentTimeMillis()
         )
+        dialogHandler.showPostDialog(updatedPost, getContent, object : PostDialogHandler.PostDialogCallback {
+            override fun onPostSubmitted(post: Post) {
+                Model.shared.updatePost(postEntity) { success ->
+                    if (success) {
+                        viewModel?.posts?.set(position, post)
+                        postAdapter?.notifyItemChanged(position)
+                        Toast.makeText(context, "Post updated successfully!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Failed to update post", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
+    }
 
-        // Call the add post function
-        Model.shared.addPost(newPost) { success ->
+    override fun onPostSubmitted(post: Post) {
+        Model.shared.addPost(post) { success ->
             if (success) {
-                // Show success message
-                Toast.makeText(requireContext(), "Post added successfully", Toast.LENGTH_SHORT).show()
-
-                // Refresh the posts list
-                viewModel?.posts?.add(0, newPost)
+                viewModel?.posts?.add(0, post)
                 postAdapter?.notifyItemInserted(0)
+                Toast.makeText(context, "Post added successfully", Toast.LENGTH_SHORT).show()
             } else {
-                // Show error message
-                Toast.makeText(requireContext(), "Failed to add post", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Failed to add post", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-
-
     fun getPostType(): String? {
         return postType
-    }
-
-    fun updatePost(position: Int) {
-        postAdapter?.notifyItemChanged(position)
     }
 
     fun scrollToTop() {

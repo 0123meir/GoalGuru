@@ -1,14 +1,12 @@
 package com.example.goalguru.ui.theme
 
 import android.app.AlertDialog
-import android.app.Dialog
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -25,7 +23,6 @@ import com.example.goalguru.model.Model
 import com.example.goalguru.model.Post
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.textfield.TextInputEditText
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -33,6 +30,7 @@ import java.util.UUID
 
 class PostAdapter(
     private var posts: MutableList<Post> = mutableListOf(),
+    private val postsFragment: PostsFragment
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     fun set(posts: MutableList<Post>) {
@@ -101,7 +99,7 @@ class PostAdapter(
 
             // Set up edit button click listener
             holder.btnEditPost.setOnClickListener {
-                onEditClick(post, holder, position)
+                onEditClick(post, position)
             }
 
             // Set up delete button click listener
@@ -199,98 +197,10 @@ class PostAdapter(
             .setNegativeButton("Cancel", null)
             .show()
     }
-    private fun onEditClick(post: Post, holder : PostViewHolder, position: Int) {
 
-        // Get the Dialog
-        val dialog = Dialog(holder.itemView.context)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setContentView(R.layout.dialog_create_edit_post)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-
-        // Get views from dialog
-        val etEditPostText: TextInputEditText = dialog.findViewById(R.id.et_post_text)
-        val btnCancelEdit: MaterialButton = dialog.findViewById(R.id.btn_cancel)
-        val btnSaveEdit: MaterialButton = dialog.findViewById(R.id.btn_submit)
-
-        // Set up image previews
-        val editImagePreview1: ImageView = dialog.findViewById(R.id.image_preview_1)
-        val editImagePreview2: ImageView = dialog.findViewById(R.id.image_preview_2)
-        val editImagePreview3: ImageView = dialog.findViewById(R.id.image_preview_3)
-
-        // Populate form with existing post data
-        etEditPostText.setText(post.text)
-
-        // Show existing images if any
-        if (post.imageUrls.isNotEmpty()) {
-            editImagePreview1.visibility = View.VISIBLE
-            Glide.with(dialog.context)
-                .load(post.imageUrls[0])
-                .error(R.drawable.ic_launcher_foreground)
-                .into(editImagePreview1)
-        }
-
-        if (post.imageUrls.size > 1) {
-            editImagePreview2.visibility = View.VISIBLE
-            Glide.with(dialog.context)
-                .load(post.imageUrls[1])
-                .error(R.drawable.ic_launcher_foreground)
-                .into(editImagePreview2)
-        }
-
-        if (post.imageUrls.size > 2) {
-            editImagePreview3.visibility = View.VISIBLE
-            Glide.with(dialog.context)
-                .load(post.imageUrls[2])
-                .error(R.drawable.ic_launcher_foreground)
-                .into(editImagePreview3)
-        }
-
-        // Set up button listeners
-        btnCancelEdit.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        btnSaveEdit.setOnClickListener {
-            val updatedText = etEditPostText.text.toString().trim()
-
-            if (updatedText.isEmpty()) {
-                Toast.makeText(dialog.context, "post text cannot be empty", Toast.LENGTH_SHORT)
-                    .show()
-            }
-            if (updatedText.length > 200) {
-                Toast.makeText(
-                    dialog.context,
-                    "text length must be under 200 characters",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-            } else {
-                post.text = updatedText
-
-                Model.shared.updatePost(post.id, updatedText) { success ->
-                    if (success) {
-                        notifyItemChanged(position)
-                    } else {
-                        Toast.makeText(dialog.context, "post update failed", Toast.LENGTH_SHORT)
-                            .show()
-
-                    }
-
-                    notifyItemChanged(position)
-                    dialog.dismiss()
-                    Toast.makeText(dialog.context, "Post updated successfully!", Toast.LENGTH_SHORT)
-                        .show()
-
-                }
-            }
-
-            dialog.show()
-        }
+    private fun onEditClick(post: Post, position: Int) {
+        postsFragment.editPost(post, position)
     }
-
 
     private fun toggleCommentsSection(holder: PostViewHolder, post: Post) {
         if(holder.commentsSection.visibility == View.VISIBLE){
@@ -408,5 +318,5 @@ class PostAdapter(
         }
     }
 
-    override fun getItemCount(): Int = posts?.size ?: 0
+    override fun getItemCount(): Int = posts.size
 }

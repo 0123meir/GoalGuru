@@ -1,30 +1,22 @@
 package com.example.goalguru.ui.theme
 
-import android.app.Dialog
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.example.goalguru.R
-import com.example.goalguru.model.Post
-import com.example.goalguru.model.PostEntity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import java.util.UUID
 
-
-class ForumFragment : Fragment(), PostDialogHandler.PostDialogCallback {
+class ForumFragment : Fragment() {
 
     private lateinit var dialogHandler: PostDialogHandler
 
-    // Register for activity result
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             dialogHandler.addImage(it)
@@ -41,7 +33,6 @@ class ForumFragment : Fragment(), PostDialogHandler.PostDialogCallback {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the fragment_forum layout
         val view = inflater.inflate(R.layout.fragment_forum, container, false)
 
         val viewPager: ViewPager2 = view.findViewById(R.id.viewPager)
@@ -57,54 +48,13 @@ class ForumFragment : Fragment(), PostDialogHandler.PostDialogCallback {
             tab.text = if (position == 0) "Your Posts" else "Explore"
         }.attach()
 
-        // Initialize dialog handler
         dialogHandler = PostDialogHandler(requireContext())
 
-        // Set up FAB click listener
         fabAddPost.setOnClickListener {
-            dialogHandler.showCreatePostDialog(getContent, this)
+            val yourPostsFragment = findPostsFragment("your_posts")
+            yourPostsFragment?.addNewPost()
         }
 
         return view
-    }
-
-    fun editPost(post: Post, position: Int) {
-        dialogHandler.showEditPostDialog(post, getContent, object : PostDialogHandler.PostDialogCallback {
-            override fun onPostSubmitted(text: String, imageUris: List<String>) {
-                // Update the post
-                post.text = text
-                post.imageUrls = imageUris
-
-                // Update the UI
-                val yourPostsFragment = findPostsFragment("your_posts")
-                yourPostsFragment?.updatePost(position)
-
-                Toast.makeText(context, "Post updated successfully!", Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
-    override fun onPostSubmitted(text: String, imageUris: List<String>) {
-        createNewPost(text, imageUris)
-    }
-
-    private fun createNewPost(text: String, imageUrls: List<String>) {
-        try {
-
-            // Use the findPostsFragment function to get the fragment
-            val yourPostsFragment = findPostsFragment("your_posts")
-            yourPostsFragment?.addNewPost(text, imageUrls)
-
-            //scroll up after creating a post
-            yourPostsFragment?.scrollToTop()
-
-
-            // Show success message
-            Toast.makeText(context, "Post created successfully!", Toast.LENGTH_SHORT).show()
-
-        } catch (e: Exception) {
-            Log.e("ForumFragment", "Error creating post", e)
-            Toast.makeText(context, "Error creating post", Toast.LENGTH_SHORT).show()
-        }
     }
 }
