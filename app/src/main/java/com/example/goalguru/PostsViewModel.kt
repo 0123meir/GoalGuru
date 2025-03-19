@@ -1,5 +1,6 @@
 package com.example.goalguru
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.goalguru.model.Post
 import com.example.goalguru.model.PostEntity
@@ -35,6 +36,8 @@ class PostsViewModel : ViewModel() {
     }
 
     fun updatePosts(posts: MutableList<Post>) {
+        Log.d("post: ", "posts: ${posts}")
+
         this.posts = posts
     }
 }

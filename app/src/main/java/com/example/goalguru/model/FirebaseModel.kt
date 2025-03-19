@@ -35,9 +35,8 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             }
     }
 
-    fun getPosts(sinceLastUpdated: Long, callback: PostsCallback) {
+    fun getPosts( callback: PostsCallback) {
         database.collection("posts")
-            .whereGreaterThan("timestamp", sinceLastUpdated)
             .get()
             .addOnCompleteListener {
                 when (it.isSuccessful) {
@@ -83,7 +82,7 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
     }
 
     fun getCurrentUserUsername(callback: (String?) -> Unit) {
-        val userId = userViewModel?.getCurrentUserId() ?: return
+        val userId = Model.shared.getCurrentUserId()
         database.collection("users").document(userId).get()
             .addOnSuccessListener { document ->
                 if (document != null && document.exists()) {
@@ -195,6 +194,26 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
         database.collection("tasks").document(taskId).delete()
             .addOnCompleteListener {
                 callback(it.isSuccessful)
+            }
+    }
+
+    fun getUserByID(userId: String, callback: (User?) -> Unit) {
+        database.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val user = User(
+                        id = document.getString("uid") ?: "",
+                        email = document.getString("email") ?: "",
+                        username = document.getString("username") ?: "",
+                        profilePicture = document.getString("profilePicture") ?: ""
+                    )
+                    callback(user)
+                } else {
+                    callback(null)
+                }
+            }
+            .addOnFailureListener {
+                callback(null)
             }
     }
 }

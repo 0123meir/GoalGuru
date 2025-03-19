@@ -13,16 +13,20 @@ class UserViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val _user = MutableLiveData<FirebaseUser?>()
     val user: LiveData<FirebaseUser?> get() = _user
+    private var username: String? = null
+    private var profileImage :String = ""
 
     init {
-        _user.value = auth.currentUser
+        initializeUserData(auth)
     }
 
     fun loginUser(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    _user.value = auth.currentUser
+                    //get user data from firestore
+                    initializeUserData(auth)
+
                     Toast.makeText(MyApplication.Globals.context, "Login successful", Toast.LENGTH_SHORT).show()
                     Log.d("UserViewModel", _user.value.toString())
                 } else {
@@ -44,6 +48,14 @@ class UserViewModel : ViewModel() {
             }
     }
 
+    fun initializeUserData(auth: FirebaseAuth) {
+        _user.value = auth.currentUser
+        firebaseModel.getUserByID(_user.value?.uid ?: "") { user ->
+            username = user?.username
+            profileImage = user?.profilePicture ?: ""
+        }
+    }
+
     fun logoutUser() {
         auth.signOut()
         _user.value = null
@@ -52,4 +64,13 @@ class UserViewModel : ViewModel() {
     fun getCurrentUserId(): String? {
         return _user.value?.uid
     }
+
+    fun getCurrentUserUsername(): String? {
+        return username
+    }
+
+    fun getCurrentUserProfileImage(): String {
+        return profileImage
+    }
+
 }

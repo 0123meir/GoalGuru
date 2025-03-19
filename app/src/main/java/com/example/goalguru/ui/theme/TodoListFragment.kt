@@ -116,7 +116,7 @@ class TodoListFragment : Fragment() {
 
     private fun createTask(sheetBinding: NewEditTaskLayoutBinding, dialog: BottomSheetDialog) {
         val newTask = Task(
-            userId = "user_id_placeholder", // Replace with actual user ID from auth
+            userId = Model.shared.getCurrentUserId(),
             title = sheetBinding.taskGoalInput.text.toString(),
             description = sheetBinding.taskDescriptionInput.text.toString(),
             deadline = sheetBinding.taskDeadlineInput.text.toString().toIntOrNull() ?: 0,

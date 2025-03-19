@@ -157,16 +157,17 @@ class PostAdapter(
                     username = Model.shared.getCurrentUserUsername(),
                     text = commentText,
                     id = UUID.randomUUID().toString(),
-                    postId = UUID.randomUUID().toString(),
+                    postId = post.id,
                     timestamp = System.currentTimeMillis(),
                     userProfilePicture = Model.shared.getCurrentUserImage()
                 )
-
+                Log.d("comment", "comment: $newComment")
                 // save the comment to the database
                 Model.shared.addComment(newComment) { success ->
                     if (success) {
-                        holder.commentInput.text.clear()
+                        post.comments.add(newComment)
                         commentAdapter.notifyItemInserted(post.comments.size - 1)
+                        holder.commentInput.text.clear()
                     } else {
                         Toast.makeText(MyApplication.Globals.context, "Failed to add comment", Toast.LENGTH_SHORT).show()
                     }
