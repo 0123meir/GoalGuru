@@ -34,7 +34,12 @@ class PostAdapter(
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     fun set(posts: MutableList<Post>) {
-        this.posts = posts
+        if(postsFragment.getPostType() == "your_posts") {
+            this.posts = posts.filter { post -> post.userId == Model.shared.getCurrentUserId() }
+                .toMutableList()
+        } else {
+            this.posts = posts.filter { post -> post.userId != Model.shared.getCurrentUserId() }
+                .toMutableList()        }
     }
 
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
