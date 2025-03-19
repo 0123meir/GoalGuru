@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.goalguru.model.Post
 import com.example.goalguru.model.PostEntity
-import com.example.goalguru.model.dao.AppLocalDb
 
 class PostsViewModel : ViewModel() {
     private var _posts: MutableList<Post>? = null
