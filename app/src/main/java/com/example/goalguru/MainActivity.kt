@@ -41,9 +41,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         exitIcon.setOnClickListener {
-            AppUtils.showExitConfirmationDialog(this) {
-                finish()
-            }
+            AppUtils.showExitConfirmationDialog(this)
         }
         profilePhoto.setOnClickListener {
 //            loadFragment(ProfileFragment())
