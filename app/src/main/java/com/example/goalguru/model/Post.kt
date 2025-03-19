@@ -4,9 +4,7 @@ import android.content.Context
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.goalguru.base.MyApplication
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
-import java.util.UUID
 
 @Entity(tableName = "posts")
 data class PostEntity(

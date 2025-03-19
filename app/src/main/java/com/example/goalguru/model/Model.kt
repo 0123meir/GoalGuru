@@ -4,6 +4,7 @@ import com.example.goalguru.model.FirebaseModel
 import com.example.goalguru.model.LikeEntity
 import com.example.goalguru.model.Post
 import com.example.goalguru.model.PostEntity
+import com.example.goalguru.model.Task
 import com.example.goalguru.model.User
 import com.example.goalguru.model.dao.AppLocalDb
 import com.example.goalguru.model.dao.AppLocalDbRepository
@@ -276,6 +277,66 @@ class Model private constructor() {
                 firebaseModel.addComment(comment) { success ->
                     callback(success)
                 }
+            }
+        }
+    }
+
+    fun getTasks(callback: (List<Task>) -> Unit) {
+        coroutineScope.launch {
+            val tasks = database.taskDao().getAllTasks(currentUserId)
+            withContext(mainDispatcher) {
+                callback(tasks)
+            }
+        }
+    }
+
+    fun createTask(task: Task, callback: (Boolean) -> Unit) {
+        // First add to Firebase
+        firebaseModel.createTask(task) { success ->
+            if (success) {
+                // Then add to local DB
+                coroutineScope.launch {
+                    database.taskDao().insertTask(task)
+                    withContext(mainDispatcher) {
+                        callback(true)
+                    }
+                }
+            } else {
+                callback(false)
+            }
+        }
+    }
+
+    fun updateTask(taskId: String, newTask: Task, callback: (Boolean) -> Unit) {
+        // First update in Firebase
+        firebaseModel.updateTask(taskId, newTask) { success ->
+            if (success) {
+                // Then update in local DB
+                coroutineScope.launch {
+                    database.taskDao().updateTask(newTask)
+                    withContext(mainDispatcher) {
+                        callback(true)
+                    }
+                }
+            } else {
+                callback(false)
+            }
+        }
+    }
+
+    fun deleteTask(taskId: String, callback: (Boolean) -> Unit) {
+        // First delete from Firebase
+        firebaseModel.deleteTask(taskId) { success ->
+            if (success) {
+                // Then delete from local DB
+                coroutineScope.launch {
+                    database.taskDao().deleteTaskById(taskId)
+                    withContext(mainDispatcher) {
+                        callback(true)
+                    }
+                }
+            } else {
+                callback(false)
             }
         }
     }

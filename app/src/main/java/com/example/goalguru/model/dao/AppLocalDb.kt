@@ -20,6 +20,8 @@ abstract class AppLocalDbRepository : RoomDatabase() {
     abstract fun commentDao(): CommentDao
     abstract fun userDao(): UserDao
     abstract fun likeDao(): LikeDao
+    abstract fun taskDao(): TaskDao
+
 }
 
 object AppLocalDb {

@@ -9,21 +9,18 @@ import com.example.goalguru.model.Task
 
 @Dao
 interface TaskDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertTask(task: Task)
+    @Query("SELECT * FROM tasks WHERE userId = :userId ORDER BY deadline ASC")
+    suspend fun getAllTasks(userId: String): List<Task>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertTasks(tasks: List<Task>)
+    suspend fun insertTask(task: Task)
 
     @Update
-    fun updateTask(task: Task)
-
-    @Query("SELECT * FROM tasks WHERE id = :taskId")
-    fun getTaskById(taskId: String): Task?
-
-    @Query("SELECT * FROM tasks")
-    fun getAllTasks(): List<Task>
+    suspend fun updateTask(task: Task)
 
     @Query("DELETE FROM tasks WHERE id = :taskId")
-    fun deleteTaskById(taskId: String)
+    suspend fun deleteTaskById(taskId: String)
+
+    @Query("SELECT * FROM tasks WHERE id = :taskId")
+    suspend fun getTaskById(taskId: String): Task?
 }
