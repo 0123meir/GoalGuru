@@ -19,7 +19,7 @@ data class Post(
     val id: String,
     val userId: String,
     var text: String,
-    val imageUrls: List<String>,
+    var imageUrls: List<String>,
     var likesCount: Int = 0,
     var isLikedByUser: Boolean = false,
     val comments: MutableList<Comment> = mutableListOf(),

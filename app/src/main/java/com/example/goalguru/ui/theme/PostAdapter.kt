@@ -1,11 +1,13 @@
 package com.example.goalguru.ui.theme
 
 import android.app.AlertDialog
+import android.app.Dialog
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -21,6 +23,7 @@ import com.example.goalguru.model.Comment
 import com.example.goalguru.model.Post
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.textfield.TextInputEditText
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -207,21 +210,21 @@ class PostAdapter(
         // Get the Dialog
         val dialog = Dialog(holder.itemView.context)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setContentView(R.layout.dialog_edit_post)
+        dialog.setContentView(R.layout.dialog_create_edit_post)
         dialog.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
 
         // Get views from dialog
-        val etEditPostText: TextInputEditText = dialog.findViewById(R.id.et_edit_post_text)
-        val btnCancelEdit: MaterialButton = dialog.findViewById(R.id.btn_cancel_edit)
-        val btnSaveEdit: MaterialButton = dialog.findViewById(R.id.btn_save_edit)
+        val etEditPostText: TextInputEditText = dialog.findViewById(R.id.et_post_text)
+        val btnCancelEdit: MaterialButton = dialog.findViewById(R.id.btn_cancel)
+        val btnSaveEdit: MaterialButton = dialog.findViewById(R.id.btn_submit)
 
         // Set up image previews
-        val editImagePreview1: ImageView = dialog.findViewById(R.id.edit_image_preview_1)
-        val editImagePreview2: ImageView = dialog.findViewById(R.id.edit_image_preview_2)
-        val editImagePreview3: ImageView = dialog.findViewById(R.id.edit_image_preview_3)
+        val editImagePreview1: ImageView = dialog.findViewById(R.id.image_preview_1)
+        val editImagePreview2: ImageView = dialog.findViewById(R.id.image_preview_2)
+        val editImagePreview3: ImageView = dialog.findViewById(R.id.image_preview_3)
 
         // Populate form with existing post data
         etEditPostText.setText(post.text)
