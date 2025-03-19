@@ -83,8 +83,8 @@ class PostsFragment : Fragment() {
                 Toast.makeText(requireContext(), "Post added successfully", Toast.LENGTH_SHORT).show()
 
                 // Refresh the posts list
+                viewModel?.posts?.add(0, newPost)
                 postAdapter?.notifyItemInserted(0)
-
             } else {
                 // Show error message
                 Toast.makeText(requireContext(), "Failed to add post", Toast.LENGTH_SHORT).show()
