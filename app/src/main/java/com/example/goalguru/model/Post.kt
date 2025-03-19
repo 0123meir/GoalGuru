@@ -1,6 +1,7 @@
 package com.example.goalguru.model
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.goalguru.base.MyApplication

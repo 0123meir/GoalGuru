@@ -5,48 +5,11 @@ package com.example.goalguru.model
 
 import androidx.room.*
 
-@Entity(tableName = "users")
-data class UserEntity(
-    @PrimaryKey val id: String,
-    val username: String,
-    val password: String,
-    val profilePicture: String
-)
-
 data class User(
     val id: String,
     val username: String,
     val profilePicture: String
-) {
-
-    companion object {
-        const val KEY_ID = "id"
-        const val KEY_USERNAME = "username"
-        const val KEY_PASSWORD = "password"
-        const val KEY_PROFILE_PICTURE = "profilePicture"
-
-        fun fromJSON(json: Map<String, Any>): UserEntity {
-            val id = json[KEY_ID] as String
-            val username = json[KEY_USERNAME] as String
-            val password = json[KEY_PASSWORD] as String
-            val profilePicture = json[KEY_PROFILE_PICTURE] as String
-
-            return UserEntity(
-                id = id,
-                username = username,
-                password = password,
-                profilePicture = profilePicture
-            )
-        }
-    }
-
-    val json: HashMap<String, Any?>
-        get() = hashMapOf(
-            KEY_ID to id,
-            KEY_USERNAME to username,
-            KEY_PROFILE_PICTURE to profilePicture
-        )
-}
+) { }
 
 @Entity(tableName = "post_images")
 data class PostImageEntity(
