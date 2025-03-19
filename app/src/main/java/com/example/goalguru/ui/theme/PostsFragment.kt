@@ -41,13 +41,13 @@ class PostsFragment : Fragment() {
 
         recyclerView.adapter = postAdapter
 
-        getYourPosts()
+        getAllPosts()
 
         return view
     }
 
 
-    private fun getYourPosts() {
+    private fun getAllPosts() {
         Model.shared.getPosts {
             viewModel?.updatePosts(it)
             postAdapter?.set(it)
