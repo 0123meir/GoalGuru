@@ -37,6 +37,7 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
 
     fun getPosts(sinceLastUpdated: Long, callback: PostsCallback) {
         database.collection("posts")
+            .whereGreaterThan("timestamp", sinceLastUpdated)
             .get()
             .addOnCompleteListener {
                 when (it.isSuccessful) {
@@ -197,49 +198,3 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             }
     }
 }
-
-    //todo: Liraz - delete if not needed when creating profile page
-//    fun addUser(user: User, callback: (Boolean) -> Unit) {
-//        val userMap = hashMapOf(
-//            "id" to user.id,
-//            "username" to user.username,
-//            "profilePicture" to user.profilePicture
-//        )
-//
-//        database.collection("users").document(user.id).set(userMap)
-//            .addOnCompleteListener {
-//                callback(it.isSuccessful)
-//            }
-//    }
-
-//    fun getUser(userId: String, callback: (User?) -> Unit) {
-//        database.collection("users").document(userId).get()
-//            .addOnCompleteListener {
-//                if (it.isSuccessful) {
-//                    val user = it.result.toObject(User::class.java)
-//                    callback(user)
-//                } else {
-//                    callback(null)
-//                }
-//            }
-//    }
-//
-//    fun updateUser(userId: String, newUsername: String, newProfilePicture: String, callback: (Boolean) -> Unit) {
-//        val userMap = hashMapOf(
-//            "username" to newUsername,
-//            "profilePicture" to newProfilePicture
-//        )
-//
-//        database.collection("users").document(userId).update(userMap as Map<String, Any>)
-//            .addOnCompleteListener {
-//                callback(it.isSuccessful)
-//            }
-//    }
-//
-//    fun deleteUser(userId: String, callback: (Boolean) -> Unit) {
-//        database.collection("users").document(userId).delete()
-//            .addOnCompleteListener {
-//                callback(it.isSuccessful)
-//            }
-//    }
-//}

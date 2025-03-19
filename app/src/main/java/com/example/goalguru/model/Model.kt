@@ -20,7 +20,7 @@ class Model private constructor() {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private val mainDispatcher = Dispatchers.Main
     private val firebaseModel = FirebaseModel()
-    private val currentUserId: String = "user_id_placeholder" // Replace with actual user ID from auth
+    private val userViewModel = UserViewModel()
 
     companion object {
         val shared = Model()
@@ -81,34 +81,35 @@ class Model private constructor() {
         val postEntities = database.postDao().getAllPosts()
 
         for (postEntity in postEntities) {
-            // Get user data
-            val userEntity = database.userDao().getUserById(postEntity.userId)
-            val user = userEntity?.let {
-                User(
-                    id = it.id,
-                    username = it.username,
-                    profilePicture = it.profilePicture
-                )
-            } ?: User(id = "", username = "Unknown", profilePicture = "")
+            // Get user data using the new functions
+            val user = User(
+                id = postEntity.userId,
+                username = getCurrentUserUsername(),
+                profilePicture = getCurrentUserImage()
+            )
 
             // Get comments
             val commentEntities = database.commentDao().getCommentsForPost(postEntity.id)
             val comments = commentEntities.map { commentEntity ->
-                val commentUser = database.userDao().getUserById(commentEntity.userId)
+                val commentUser = User(
+                    id = commentEntity.userId,
+                    username = getCurrentUserUsername(),
+                    profilePicture = getCurrentUserImage()
+                )
                 Comment(
                     id = commentEntity.id,
                     postId = commentEntity.postId,
                     userId = commentEntity.userId,
                     text = commentEntity.text,
                     timestamp = commentEntity.timestamp,
-                    username = commentUser?.username ?: "Unknown",
-                    userProfilePicture = commentUser?.profilePicture ?: ""
+                    username = commentUser.username,
+                    userProfilePicture = commentUser.profilePicture
                 )
             }.toMutableList()
 
             // Get likes
             val likesCount = database.likeDao().getLikesCountForPost(postEntity.id)
-            val isLikedByUser = database.likeDao().isPostLikedByUser(postEntity.id, currentUserId)
+            val isLikedByUser = database.likeDao().isPostLikedByUser(postEntity.id, getCurrentUserId())
 
             // Create complete post
             val post = Post(
@@ -136,31 +137,32 @@ class Model private constructor() {
             val postEntity = database.postDao().getPostById(postId)
 
             if (postEntity != null) {
-                val userEntity = database.userDao().getUserById(postEntity.userId)
-                val user = userEntity?.let {
-                    User(
-                        id = it.id,
-                        username = it.username,
-                        profilePicture = it.profilePicture
-                    )
-                } ?: User(id = "", username = "Unknown", profilePicture = "")
+                val user = User(
+                    id = postEntity.userId,
+                    username = getCurrentUserUsername(),
+                    profilePicture = getCurrentUserImage()
+                )
 
                 val commentEntities = database.commentDao().getCommentsForPost(postEntity.id)
                 val comments = commentEntities.map { commentEntity ->
-                    val commentUser = database.userDao().getUserById(commentEntity.userId)
+                    val commentUser = User(
+                        id = commentEntity.userId,
+                        username = getCurrentUserUsername(),
+                        profilePicture = getCurrentUserImage()
+                    )
                     Comment(
                         id = commentEntity.id,
                         postId = commentEntity.postId,
                         userId = commentEntity.userId,
                         text = commentEntity.text,
                         timestamp = commentEntity.timestamp,
-                        username = commentUser?.username ?: "Unknown",
-                        userProfilePicture = commentUser?.profilePicture ?: ""
+                        username = commentUser.username,
+                        userProfilePicture = commentUser.profilePicture
                     )
                 }.toMutableList()
 
                 val likesCount = database.likeDao().getLikesCountForPost(postEntity.id)
-                val isLikedByUser = database.likeDao().isPostLikedByUser(postEntity.id, currentUserId)
+                val isLikedByUser = database.likeDao().isPostLikedByUser(postEntity.id, getCurrentUserId())
 
                 val post = Post(
                     id = postEntity.id,
@@ -234,21 +236,21 @@ class Model private constructor() {
     // Toggle like on a post
     fun toggleLike(postId: String, callback: (Boolean) -> Unit) {
         coroutineScope.launch {
-            val isLiked = database.likeDao().isPostLikedByUser(postId, currentUserId)
+            val isLiked = database.likeDao().isPostLikedByUser(postId, getCurrentUserId())
 
             if (isLiked) {
                 // Unlike
-                database.likeDao().deleteLike(postId, currentUserId)
-                firebaseModel.removeLike(postId, currentUserId)
+                database.likeDao().deleteLike(postId, getCurrentUserId())
+                firebaseModel.removeLike(postId, getCurrentUserId())
             } else {
                 // Like
                 val like = LikeEntity(
                     id = UUID.randomUUID().toString(),
-                    userId = currentUserId,
+                    userId = getCurrentUserId(),
                     postId = postId
                 )
                 database.likeDao().insertLike(like)
-                firebaseModel.addLike(postId, currentUserId)
+                firebaseModel.addLike(postId, getCurrentUserId())
             }
 
             val newIsLiked = !isLiked
@@ -283,7 +285,7 @@ class Model private constructor() {
 
     fun getTasks(callback: (List<Task>) -> Unit) {
         coroutineScope.launch {
-            val tasks = database.taskDao().getAllTasks(currentUserId)
+            val tasks = database.taskDao().getAllTasks(getCurrentUserId())
             withContext(mainDispatcher) {
                 callback(tasks)
             }
@@ -339,5 +341,28 @@ class Model private constructor() {
                 callback(false)
             }
         }
+    }
+
+    // Get current user ID
+    fun getCurrentUserId(): String {
+        return userViewModel.getCurrentUserId() ?: "unknown_user_id"
+    }
+
+    // Get current user username
+    fun getCurrentUserUsername(): String {
+        var username = ""
+        firebaseModel.getCurrentUserUsername { result ->
+            username = result ?: "unknown_username"
+        }
+        return username
+    }
+
+    // Get current user profile picture
+    fun getCurrentUserImage(): String {
+        var profilePicture = ""
+        firebaseModel.getCurrentUserImage { result ->
+            profilePicture = result ?: "unknown_profile_picture"
+        }
+        return profilePicture
     }
 }

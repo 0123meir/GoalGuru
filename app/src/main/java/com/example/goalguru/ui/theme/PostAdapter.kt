@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,7 +32,6 @@ import java.util.UUID
 
 class PostAdapter(
     private var posts: MutableList<Post> = mutableListOf(),
-    private val currentUserId: String = "user_id_placeholder" // This would come from your auth system
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     fun set(posts: MutableList<Post>) {
@@ -77,16 +77,16 @@ class PostAdapter(
         val post = posts.get(position)
         val context = holder.itemView.context
 
-        if (!post.userProfilePicture.isNullOrEmpty()) {
+        if (post.userProfilePicture.isNotEmpty()) {
             Glide.with(context)
                 .load(post.userProfilePicture)
                 .error(R.drawable.ic_launcher_foreground)
                 .circleCrop()
                 .into(holder.profilePhoto)
         } else {
-            holder.profilePhoto.setImageResource(R.drawable.ic_launcher_foreground)
+            holder.profilePhoto.setImageResource(R.drawable.default_profile)
         }
-
+        Log.d("post: ", post.toString())
         holder.userName.text = post.username
         holder.postText.text = post.text
 
@@ -95,7 +95,7 @@ class PostAdapter(
         holder.publishDate.text = formattedDate
 
         // Show or hide edit/delete buttons based on whether current user is the post creator
-        if (true) { // TODO: change to post.userId == currentUserId
+        if (post.userId == Model.shared.getCurrentUserId()) {
             holder.postActionsContainer.visibility = View.VISIBLE
 
             // Set up edit button click listener
@@ -150,19 +150,16 @@ class PostAdapter(
             val commentText = holder.commentInput.text.toString().trim()
 
             if (commentText.isNotEmpty()) {
-                val currentUserName = "Current User" // TODO: Replace with actual username when DB is ready
-                val currentUserId = "user_id_placeholder" // TODO: Replace with actual user ID when DB is ready
-                val currentUserPicture = "https://picsum.photos/id/${(100..999).random()}/500/500" // TODO: Replace with actual user ID when DB is ready
 
                 // Create and add the new comment
                 val newComment = Comment(
-                    userId = currentUserId,
-                    username = currentUserName,
+                    userId = Model.shared.getCurrentUserId(),
+                    username = Model.shared.getCurrentUserUsername(),
                     text = commentText,
                     id = UUID.randomUUID().toString(),
                     postId = UUID.randomUUID().toString(),
                     timestamp = System.currentTimeMillis(),
-                    userProfilePicture = currentUserPicture
+                    userProfilePicture = Model.shared.getCurrentUserImage()
                 )
 
                 // save the comment to the database

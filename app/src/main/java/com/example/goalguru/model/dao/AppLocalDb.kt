@@ -12,12 +12,11 @@ import com.example.goalguru.model.PostImageEntity
 import com.example.goalguru.model.Task
 
 @Database(entities = [PostEntity::class, CommentEntity::class,
-                        Task::class, PostImageEntity::class, LikeEntity::class], version = 10)
+                        Task::class, PostImageEntity::class, LikeEntity::class], version = 11)
 @TypeConverters(Converters::class)
 abstract class AppLocalDbRepository : RoomDatabase() {
     abstract fun postDao(): PostDao
     abstract fun commentDao(): CommentDao
-    abstract fun userDao(): UserDao
     abstract fun likeDao(): LikeDao
     abstract fun taskDao(): TaskDao
 
