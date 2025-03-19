@@ -28,6 +28,7 @@ cardview = "1.0.0"
 viewpager2Version = "1.1.0"
 firebaseCommonKtx = "21.0.0"
 firebaseFirestoreKtx = "25.1.2"
+firebaseAuthKtx = "23.2.0"
 
 [libraries]
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
@@ -67,6 +68,7 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntimeVersion" }
 firebase-common-ktx = { group = "com.google.firebase", name = "firebase-common-ktx", version.ref = "firebaseCommonKtx" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
