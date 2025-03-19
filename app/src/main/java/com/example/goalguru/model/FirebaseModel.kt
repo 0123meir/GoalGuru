@@ -3,7 +3,7 @@ package com.example.goalguru.model
 import UserViewModel
 import android.util.Log
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.auth.User
+import com.example.goalguru.model.User
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
@@ -113,39 +113,10 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             .update(userMap)
             .addOnSuccessListener {
                 Log.d("UserViewModel", "Profile picture updated in Firestore")
+                userViewModel?.updateUserData()
             }
             .addOnFailureListener { e ->
                 Log.d("UserViewModel", "Error updating profile picture in Firestore", e)
-            }
-    }
-
-    fun getCurrentUserUsername(callback: (String?) -> Unit) {
-        val userId = userViewModel?.getCurrentUserId() ?: return
-        database.collection("users").document(userId).get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    callback(document.getString("username"))
-                } else {
-                    callback(null)
-                }
-            }
-            .addOnFailureListener {
-                callback(null)
-            }
-    }
-
-    fun getCurrentUserImage(callback: (String?) -> Unit) {
-        val userId = userViewModel?.getCurrentUserId() ?: return
-        database.collection("users").document(userId).get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    callback(document.getString("profilePicture"))
-                } else {
-                    callback(null)
-                }
-            }
-            .addOnFailureListener {
-                callback(null)
             }
     }
 
@@ -223,6 +194,28 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             }
             .addOnFailureListener {
                 callback(null)
+            }
+    }
+
+    fun addLike(postId: String, userId: String) {
+        val like = LikeEntity(
+            id = UUID.randomUUID().toString(),
+            userId = userId,
+            postId = postId
+        )
+
+        database.collection("likes").document(like.id).set(like.json)
+    }
+
+    fun removeLike(postId: String, userId: String) {
+        database.collection("likes")
+            .whereEqualTo(LikeEntity.KEY_POST_ID, postId)
+            .whereEqualTo(LikeEntity.KEY_USER_ID, userId)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    database.collection("likes").document(document.id).delete()
+                }
             }
     }
 }

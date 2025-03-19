@@ -24,6 +24,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
+import com.example.goalguru.model.Model
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -66,16 +67,22 @@ class UserProfileFragment : Fragment() {
             }
         }
 
-        userViewModel.user.observe(viewLifecycleOwner) { user ->
-            firebaseModel.getCurrentUserEmail { emailText ->
-                email.text = emailText
-            }
-            firebaseModel.getCurrentUserUsername { usernameText ->
-                username.setText(usernameText)
-            }
-            firebaseModel.getCurrentUserImage { url ->
-                Glide.with(this).load(url).into(profilePicture)
-            }
+//        userViewModel.user.observe(viewLifecycleOwner) { user ->
+//            email.text = Model.shared.getCurrentUserEmail()
+//            username.setText(Model.shared.getCurrentUserUsername())
+//            Glide.with(this).load(Model.shared.getCurrentUserImage()).into(profilePicture)
+//        }
+
+        userViewModel.username.observe(viewLifecycleOwner) { retUsername ->
+            username.setText(retUsername)
+        }
+
+        userViewModel.profilePicture.observe(viewLifecycleOwner) { profilePictureUrl ->
+            Glide.with(this).load(profilePictureUrl).into(profilePicture)
+        }
+
+        userViewModel.email.observe(viewLifecycleOwner) { retEmail ->
+            email.text = retEmail
         }
 
         changeProfilePictureButton.setOnClickListener {
