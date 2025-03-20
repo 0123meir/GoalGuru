@@ -11,6 +11,6 @@ data class Task(
     val title: String = "",
     val description: String = "",
     val deadline: Int = 0,
-    val isChecked: Boolean = false
+    var isChecked: Boolean = false
 ) {
 }
