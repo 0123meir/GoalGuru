@@ -26,6 +26,7 @@ class TodoListFragment : Fragment() {
     private var newTask: FloatingActionButton? = null
     private lateinit var tasksAdapter: TasksAdapter
     private val loadingViewModel: LoadingViewModel by activityViewModels()
+    private lateinit var todoListTitle: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,6 +36,7 @@ class TodoListFragment : Fragment() {
 
         recyclerView = view.findViewById(R.id.task_list)
         newTask = view.findViewById(R.id.new_task)
+        todoListTitle = view.findViewById(R.id.todo_list_title)
 
         tasksAdapter = TasksAdapter(requireContext()) { task, position ->
             openEditTaskBottomSheet(task, position)
@@ -49,6 +51,8 @@ class TodoListFragment : Fragment() {
         newTask?.setOnClickListener {
             openNewTaskBottomSheet()
         }
+
+        fetchRandomQuote("inspirational")
 
         return view
     }
@@ -208,4 +212,21 @@ class TodoListFragment : Fragment() {
         sheetBinding.taskDescriptionInput.addTextChangedListener(textWatcher)
         sheetBinding.taskDeadlineInput.addTextChangedListener(textWatcher)
     }
+
+    private fun fetchRandomQuote(tags: String) {
+        RetrofitClient.instance.getRandomQuote(tags).enqueue(object : Callback<QuoteResponse> {
+            override fun onResponse(call: Call<QuoteResponse>, response: Response<QuoteResponse>) {
+                if (response.isSuccessful) {
+                    val quote = response.body()
+                    quote?.let {
+                        todoListTitle.text = "\"${it.content}\" - ${it.author}"
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<QuoteResponse>, t: Throwable) {
+                Toast.makeText(context, "Failed to fetch quote", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }+
 }
