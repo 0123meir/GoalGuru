@@ -38,10 +38,25 @@ class Model private constructor() {
                     async {
                         database.postDao().insertAll(postEntity)
 
-                        val likesCount = database.likeDao().getLikesCountForPost(postEntity.id)
-                        val isLikedByUser = database.likeDao().isPostLikedByUser(postEntity.id, getCurrentUserId())
-
-                        val comments = database.commentDao().getCommentsForPost(postEntity.id).map { commentEntity ->
+                        val likesCountDeferred = async {
+                            suspendCancellableCoroutine<Int> { continuation ->
+                                firebaseModel.getLikesCountForPost(postEntity.id) { count ->
+                                    continuation.resume(count)
+                                }
+                            }
+                        }
+                        val likesCount = likesCountDeferred.await()
+                        val isLikedByUserDeferred = async {
+                            suspendCancellableCoroutine<Boolean> { continuation ->
+                                firebaseModel.isPostLikedByUser(postEntity.id, getCurrentUserId()) { isLiked ->
+                                    continuation.resume(isLiked)
+                                }
+                            }
+                        }
+                        val isLikedByUser = isLikedByUserDeferred.await()
+                        val comments = async {
+                            firebaseModel.getCommentsByPostId(postEntity.id)
+                        }.await().map { commentEntity ->
                             val commenterDeferred = async<Comment> {
                                 suspendCancellableCoroutine { continuation ->
                                     firebaseModel.getUserByID(commentEntity.userId) { commenter ->
@@ -60,7 +75,6 @@ class Model private constructor() {
                             }
                             commenterDeferred.await()
                         }
-
                         val postWithUser = async<Post> {
                             suspendCancellableCoroutine { continuation ->
                                 firebaseModel.getUserByID(postEntity.userId) { user ->
