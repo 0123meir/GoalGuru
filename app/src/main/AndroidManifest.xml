@@ -10,12 +10,14 @@
         android:name=".base.MyApplication"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/goal_guru_icon"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/goal_guru_icon"
         android:supportsRtl="true"
         android:theme="@style/Theme.GoalGuru"
         tools:targetApi="34">
+
+
         <activity
             android:name=".LoginActivity"
             android:exported="true" >
