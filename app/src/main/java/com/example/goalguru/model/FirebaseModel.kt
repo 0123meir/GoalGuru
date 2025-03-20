@@ -7,7 +7,9 @@ import com.example.goalguru.model.User
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.UUID
+import kotlin.coroutines.resume
 
 typealias PostsCallback = (List<PostEntity>) -> Unit
 
@@ -40,6 +42,47 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             }
     }
 
+    fun getLikesCountForPost(postId: String, callback: (Int) -> Unit) {
+        database.collection("likes")
+            .whereEqualTo("postId", postId)
+            .get()
+            .addOnSuccessListener { documents ->
+                callback(documents.size())
+            }
+            .addOnFailureListener {
+                callback(0)
+            }
+    }
+
+    fun isPostLikedByUser(postId: String, userId: String, callback: (Boolean) -> Unit) {
+        database.collection("likes")
+            .whereEqualTo("postId", postId)
+            .whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { documents ->
+                callback(!documents.isEmpty)
+            }
+            .addOnFailureListener {
+                callback(false)
+            }
+    }
+
+    suspend fun getCommentsByPostId(postId: String): List<CommentEntity> {
+        return suspendCancellableCoroutine { continuation ->
+            database.collection("comments")
+                .whereEqualTo("postId", postId)
+                .get()
+                .addOnSuccessListener { documents ->
+                    val comments = documents.map { document ->
+                        document.toObject(CommentEntity::class.java)
+                    }
+                    continuation.resume(comments)
+                }
+                .addOnFailureListener {
+                    continuation.resume(emptyList())
+                }
+        }
+    }
     fun getPosts(sinceLastUpdated: Long, callback: PostsCallback) {
         database.collection("posts")
             .get()

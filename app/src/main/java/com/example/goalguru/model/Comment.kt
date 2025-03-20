@@ -11,7 +11,9 @@ data class CommentEntity(
     val userId: String,
     val text: String,
     val timestamp: Long = System.currentTimeMillis(),
-)
+) {
+    constructor() : this("", "", "", "", 0L)
+}
 
 data class Comment(
     val id: String,
@@ -22,3 +24,4 @@ data class Comment(
     val username: String = "",
     val userProfilePicture: String = ""
 )
+
