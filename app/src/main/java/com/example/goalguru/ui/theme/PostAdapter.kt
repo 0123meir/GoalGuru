@@ -44,6 +44,11 @@ class PostAdapter(
         notifyDataSetChanged()
     }
 
+    fun editPost(post: Post, position: Int) {
+        posts[position] = post
+        notifyItemChanged(position)
+    }
+
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val profilePhoto: ImageView = itemView.findViewById(R.id.iv_profile_photo)
         val userName: TextView = itemView.findViewById(R.id.username)

@@ -37,4 +37,9 @@ class PostsViewModel : ViewModel() {
     fun updatePosts(posts: MutableList<Post>) {
         this.posts = posts.sortedByDescending { it.timestamp }.toMutableList()
     }
+
+    fun updatePost(post: Post, position: Int) {
+        _posts?.set(position, post)
+        adapter?.editPost(post, position)
+    }
 }

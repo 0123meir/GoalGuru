@@ -84,10 +84,12 @@ class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
         )
         dialogHandler.showPostDialog(updatedPost, getContent, object : PostDialogHandler.PostDialogCallback {
             override fun onPostSubmitted(post: Post) {
+
+
                 Model.shared.updatePost(postEntity) { success ->
                     if (success) {
-                        viewModel?.posts?.set(position, post)
-                        postAdapter?.notifyItemChanged(position)
+                        viewModel?.updatePost(post, position)
+                        postAdapter.notifyItemChanged(position)
                         Toast.makeText(context, "Post updated successfully!", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(context, "Failed to update post", Toast.LENGTH_SHORT).show()
