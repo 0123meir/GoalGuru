@@ -17,12 +17,6 @@ class ForumFragment : Fragment() {
 
     private lateinit var dialogHandler: PostDialogHandler
 
-    private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            dialogHandler.addImage(it)
-        }
-    }
-
     private fun findPostsFragment(type: String): PostsFragment? {
         val fragments = childFragmentManager.fragments
         return fragments.filterIsInstance<PostsFragment>()

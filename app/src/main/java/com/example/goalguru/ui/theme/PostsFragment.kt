@@ -8,9 +8,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.goalguru.LoadingViewModel
 import com.example.goalguru.PostsViewModel
 import com.example.goalguru.R
 import com.example.goalguru.model.Model
@@ -23,6 +25,7 @@ class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
     private var postAdapter: PostAdapter? = null
     private var viewModel: PostsViewModel? = null
     private lateinit var dialogHandler: PostDialogHandler
+    private val loadingViewModel: LoadingViewModel by activityViewModels()
 
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
@@ -52,6 +55,7 @@ class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
 
         dialogHandler = PostDialogHandler(requireContext())
 
+        loadingViewModel.setDataLoaded(false) // Show loading
         getAllPosts()
 
         return view
@@ -62,6 +66,7 @@ class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
             viewModel?.updatePosts(it)
             postAdapter?.set(it)
             postAdapter?.notifyDataSetChanged()
+            loadingViewModel.setDataLoaded(true) // Hide loading
         }
     }
 

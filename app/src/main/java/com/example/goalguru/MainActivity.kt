@@ -1,10 +1,13 @@
 package com.example.goalguru
 
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import com.airbnb.lottie.LottieAnimationView
 import com.example.goalguru.databinding.ActivityMainBinding
 import com.google.android.material.imageview.ShapeableImageView
 
@@ -12,11 +15,15 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
+    private lateinit var loadingAnimation: LottieAnimationView
+    private val loadingViewModel: LoadingViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        loadingAnimation = binding.loadingAnimation
 
         // Set up navigation
         val navHostFragment = supportFragmentManager
@@ -27,6 +34,11 @@ class MainActivity : AppCompatActivity() {
         val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
         navGraph.setStartDestination(R.id.todoListFragment)
         navController.graph = navGraph
+
+        // Observe data loading state
+        loadingViewModel.isDataLoaded.observe(this) { isLoaded ->
+            loadingAnimation.visibility = if (isLoaded) View.GONE else View.VISIBLE
+        }
 
         // Set up header navigation
         setupHeaderNavigation()
@@ -41,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         // Navigate to to-do List
         todoListButton.setOnClickListener {
             if (navController.currentDestination?.id != R.id.todoListFragment) {
-                // Use popBackStack to the todoListFragment to avoid stack build-up
+                loadingViewModel.setDataLoaded(false) // Show loading
                 navController.popBackStack(R.id.todoListFragment, false)
             }
         }
@@ -59,6 +71,7 @@ class MainActivity : AppCompatActivity() {
         // Navigate to Forum
         forumButton.setOnClickListener {
             if (navController.currentDestination?.id != R.id.forumFragment) {
+                loadingViewModel.setDataLoaded(false) // Show loading
                 when (navController.currentDestination?.id) {
                     R.id.todoListFragment -> navController.navigate(R.id.action_todo_to_forum)
                     R.id.profileFragment -> navController.navigate(R.id.action_profile_to_forum)
