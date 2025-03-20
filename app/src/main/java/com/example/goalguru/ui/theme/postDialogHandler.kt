@@ -61,7 +61,7 @@ class PostDialogHandler(private val context: Context) {
         etPostText.setText(post?.text ?: "")
         btnSubmit.text = if (post == null) "Post" else "Update"
         dialogTitle.text = if (post == null) "Create New Post" else "Edit Post"
-        
+
         btnRemoveImage1.setOnClickListener { removeImageAt(0) }
         btnRemoveImage2.setOnClickListener { removeImageAt(1) }
         btnRemoveImage3.setOnClickListener { removeImageAt(2) }

@@ -1,9 +1,7 @@
 package com.example.goalguru
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.goalguru.model.Post
-import com.example.goalguru.model.PostEntity
 import com.example.goalguru.ui.theme.PostAdapter
 
 class PostsViewModel : ViewModel() {
