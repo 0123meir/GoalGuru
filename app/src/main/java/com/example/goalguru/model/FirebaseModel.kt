@@ -223,4 +223,8 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
                 }
             }
     }
+
+    fun deletePost(postId: String) {
+        database.collection("posts").document(postId).delete()
+    }
 }

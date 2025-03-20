@@ -136,11 +136,22 @@ class Model private constructor() {
     fun deletePost(postId: String, callback: (Boolean) -> Unit) {
                 coroutineScope.launch {
                     database.postDao().deletePostById(postId)
+                    firebaseModel.deletePost(postId)
+
                     withContext(mainDispatcher) {
                         callback(true)
                     }
+                }.invokeOnCompletion { throwable ->
+                    if (throwable != null) {
+                        coroutineScope.launch {
+                            withContext(mainDispatcher) {
+                                callback(false)
+                            }
+                        }
+                    }
                 }
-        }
+    }
+
 
 
     // Toggle like on a post

@@ -189,7 +189,7 @@ class PostAdapter(
 
                 posts.removeAt(position)
                 notifyItemRemoved(position)
-
+                notifyItemRangeChanged(position, posts.size)
                 Model.shared.deletePost(post.id) { success ->
                     if (!success) {
                         // Revert if server deletion fails
