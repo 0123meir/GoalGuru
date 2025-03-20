@@ -73,6 +73,9 @@ class MainActivity : AppCompatActivity() {
             rightIcon.setImageResource(R.drawable.ic_forum)
             rightIcon.setOnClickListener {
                 loadFragment(ForumFragment())
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, fragment, "FORUM_FRAGMENT_TAG")
+                    .commit()
             }
         }
     }

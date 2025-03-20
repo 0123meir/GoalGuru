@@ -88,13 +88,11 @@ class Model private constructor() {
         }
     }
 
-    fun updatePost(postId: String, newText: String, callback: (Boolean) -> Unit) {
-        // First update in Firebase
-        firebaseModel.updatePost(postId, newText) { success ->
+    fun updatePost(updatedPost: PostEntity, callback: (Boolean) -> Unit) {
+        firebaseModel.updatePost(updatedPost) { success ->
             if (success) {
-                // Then update in local DB
                 coroutineScope.launch {
-                    val result = database.postDao().updatePostText(postId, newText)
+                    val result = database.postDao().updatePost(updatedPost)
                     withContext(mainDispatcher) {
                         callback(result > 0)
                     }

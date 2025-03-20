@@ -23,9 +23,14 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
         database.firestoreSettings = setting
     }
 
-    fun updatePost(postId: String, newText: String, callback: (Boolean) -> Unit) {
-        database.collection("posts").document(postId)
-            .update("text", newText)
+    fun updatePost(post: PostEntity, callback: (Boolean) -> Unit) {
+        val postUpdates = mapOf(
+            "text" to post.text,
+            "imageUrls" to post.imageUrls
+        )
+
+        database.collection("posts").document(post.id)
+            .update(postUpdates)
             .addOnSuccessListener {
                 callback(true)
             }

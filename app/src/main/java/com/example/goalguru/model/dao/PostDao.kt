@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.example.goalguru.model.PostEntity
 
 @Dao
@@ -21,8 +22,7 @@ interface PostDao {
     @Query("DELETE FROM posts WHERE id = :postId")
     suspend fun deletePostById(postId: String)
 
-
-    @Query("UPDATE posts SET text = :text WHERE id = :postId")
-    suspend fun updatePostText(postId: String, text: String): Int
+    @Update
+    suspend fun updatePost(post: PostEntity): Int
 }
 
