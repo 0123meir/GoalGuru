@@ -9,6 +9,7 @@ import android.view.Window
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import com.bumptech.glide.Glide
@@ -47,6 +48,7 @@ class PostDialogHandler(private val context: Context) {
         dialog?.setContentView(R.layout.dialog_create_edit_post)
         dialog?.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
+        val dialogTitle: TextView = dialog?.findViewById(R.id.dialog_title)!!
         val etPostText: EditText = dialog?.findViewById(R.id.et_post_text)!!
         val btnAddImage: Button = dialog?.findViewById(R.id.btn_add_image)!!
         val btnCancel: Button = dialog?.findViewById(R.id.btn_cancel)!!
@@ -58,6 +60,7 @@ class PostDialogHandler(private val context: Context) {
 
         etPostText.setText(post?.text ?: "")
         btnSubmit.text = if (post == null) "Post" else "Update"
+        dialogTitle.text = if (post == null) "Create New Post" else "Edit Post"
 
         btnRemoveImage1.setOnClickListener { removeImageAt(0) }
         btnRemoveImage2.setOnClickListener { removeImageAt(1) }

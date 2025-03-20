@@ -8,6 +8,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 class Model private constructor() {
 
@@ -25,60 +29,70 @@ class Model private constructor() {
     fun getPosts(callback: (MutableList<Post>) -> Unit) {
         val lastUpdated: Long = Post.lastUpdated
 
-        // Fetch from Firebase first
         firebaseModel.getPosts(lastUpdated) { postsFromDB: List<PostEntity> ->
             coroutineScope.launch {
                 var latestTime = lastUpdated
                 val posts = mutableListOf<Post>()
 
-                // Insert fetched posts into local DB and convert to Post model
-                for (postEntity in postsFromDB) {
-                    database.postDao().insertAll(postEntity)
+                val postJobs = postsFromDB.map { postEntity ->
+                    async {
+                        database.postDao().insertAll(postEntity)
 
-                    val likesCount = database.likeDao().getLikesCountForPost(postEntity.id)
-                    val isLikedByUser = database.likeDao().isPostLikedByUser(postEntity.id, getCurrentUserId())
+                        val likesCount = database.likeDao().getLikesCountForPost(postEntity.id)
+                        val isLikedByUser = database.likeDao().isPostLikedByUser(postEntity.id, getCurrentUserId())
 
-                    val comments = mutableListOf<Comment>()
-                    database.commentDao().getCommentsForPost(postEntity.id).forEach { commentEntity ->
-                        firebaseModel.getUserByID(commentEntity.userId) { commenter ->
-                            val comment = Comment(
-                                id = commentEntity.id,
-                                postId = commentEntity.postId,
-                                userId = commentEntity.userId,
-                                text = commentEntity.text,
-                                timestamp = commentEntity.timestamp,
-                                username = commenter?.username ?: "unknown",
-                                userProfilePicture = commenter?.profilePicture ?: ""
-                            )
-                            comments.add(comment)
+                        val comments = database.commentDao().getCommentsForPost(postEntity.id).map { commentEntity ->
+                            val commenterDeferred = async<Comment> {
+                                suspendCancellableCoroutine { continuation ->
+                                    firebaseModel.getUserByID(commentEntity.userId) { commenter ->
+                                        val comment = Comment(
+                                            id = commentEntity.id,
+                                            postId = commentEntity.postId,
+                                            userId = commentEntity.userId,
+                                            text = commentEntity.text,
+                                            timestamp = commentEntity.timestamp,
+                                            username = commenter?.username ?: "unknown",
+                                            userProfilePicture = commenter?.profilePicture ?: ""
+                                        )
+                                        continuation.resume(comment)
+                                    }
+                                }
+                            }
+                            commenterDeferred.await()
                         }
-                    }
 
-                    // get user that posted each post
-                    firebaseModel.getUserByID(postEntity.userId) { user ->
-                        val post = Post(
-                            id = postEntity.id,
-                            userId = postEntity.userId,
-                            text = postEntity.text,
-                            imageUrls = postEntity.imageUrls,
-                            likesCount = likesCount,
-                            isLikedByUser = isLikedByUser,
-                            comments = comments.toMutableList(),
-                            timestamp = postEntity.timestamp,
-                            username = user?.username ?: "unknown",
-                            userProfilePicture = user?.profilePicture ?: ""
-                        )
-
-                        posts.add(post)
-                    }
-
-                    postEntity.timestamp.let {
-                        if (latestTime < it) {
-                            latestTime = it
+                        val postWithUser = async<Post> {
+                            suspendCancellableCoroutine { continuation ->
+                                firebaseModel.getUserByID(postEntity.userId) { user ->
+                                    val post = Post(
+                                        id = postEntity.id,
+                                        userId = postEntity.userId,
+                                        text = postEntity.text,
+                                        imageUrls = postEntity.imageUrls,
+                                        likesCount = likesCount,
+                                        isLikedByUser = isLikedByUser,
+                                        comments = comments.toMutableList(),
+                                        timestamp = postEntity.timestamp,
+                                        username = user?.username ?: "unknown",
+                                        userProfilePicture = user?.profilePicture ?: ""
+                                    )
+                                    continuation.resume(post)
+                                }
+                            }
                         }
+                        val post = postWithUser.await()
+
+                        postEntity.timestamp.let {
+                            if (latestTime < it) {
+                                latestTime = it
+                            }
+                        }
+
+                        post
                     }
                 }
 
+                posts.addAll(postJobs.awaitAll())
                 Post.lastUpdated = latestTime
 
                 withContext(mainDispatcher) {
@@ -87,7 +101,6 @@ class Model private constructor() {
             }
         }
     }
-
     fun updatePost(updatedPost: PostEntity, callback: (Boolean) -> Unit) {
         firebaseModel.updatePost(updatedPost) { success ->
             if (success) {
@@ -134,21 +147,25 @@ class Model private constructor() {
 
     // Delete a post
     fun deletePost(postId: String, callback: (Boolean) -> Unit) {
-        // First delete from Firebase
-        Model.shared.deletePost(postId) { success ->
-            if (success) {
-                // Then delete from local DB
                 coroutineScope.launch {
                     database.postDao().deletePostById(postId)
+                    firebaseModel.deletePost(postId)
+
                     withContext(mainDispatcher) {
                         callback(true)
                     }
+                }.invokeOnCompletion { throwable ->
+                    if (throwable != null) {
+                        coroutineScope.launch {
+                            withContext(mainDispatcher) {
+                                callback(false)
+                            }
+                        }
+                    }
                 }
-            } else {
-                callback(false)
-            }
-        }
     }
+
+
 
     // Toggle like on a post
     fun toggleLike(postId: String, callback: (Boolean) -> Unit) {

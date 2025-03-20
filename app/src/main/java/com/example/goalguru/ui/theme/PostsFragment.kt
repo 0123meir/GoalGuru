@@ -8,9 +8,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.goalguru.LoadingViewModel
 import com.example.goalguru.PostsViewModel
 import com.example.goalguru.R
 import com.example.goalguru.model.Model
@@ -20,9 +22,10 @@ import com.example.goalguru.model.PostEntity
 class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
 
     private var postType: String? = null
-    private var postAdapter: PostAdapter? = null
+    private lateinit var postAdapter: PostAdapter
     private var viewModel: PostsViewModel? = null
     private lateinit var dialogHandler: PostDialogHandler
+    private val loadingViewModel: LoadingViewModel by activityViewModels()
 
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
@@ -48,10 +51,12 @@ class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
         recyclerView.layoutManager = LinearLayoutManager(context)
 
         postAdapter = PostAdapter(viewModel?.posts ?: mutableListOf(), this)
+        viewModel?.setAdapter(postAdapter)
         recyclerView.adapter = postAdapter
 
         dialogHandler = PostDialogHandler(requireContext())
 
+        loadingViewModel.setDataLoaded(false) // Show loading
         getAllPosts()
 
         return view
@@ -60,8 +65,8 @@ class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
     private fun getAllPosts() {
         Model.shared.getPosts {
             viewModel?.updatePosts(it)
-            postAdapter?.set(it)
             postAdapter?.notifyDataSetChanged()
+            loadingViewModel.setDataLoaded(true) // Hide loading
         }
     }
 
@@ -79,10 +84,12 @@ class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
         )
         dialogHandler.showPostDialog(updatedPost, getContent, object : PostDialogHandler.PostDialogCallback {
             override fun onPostSubmitted(post: Post) {
+
+
                 Model.shared.updatePost(postEntity) { success ->
                     if (success) {
-                        viewModel?.posts?.set(position, post)
-                        postAdapter?.notifyItemChanged(position)
+                        viewModel?.updatePost(post, position)
+                        postAdapter.notifyItemChanged(position)
                         Toast.makeText(context, "Post updated successfully!", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(context, "Failed to update post", Toast.LENGTH_SHORT).show()
@@ -93,12 +100,14 @@ class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
     }
 
     override fun onPostSubmitted(post: Post) {
+        viewModel?.add(0, post)
+        scrollToTop()
+
         Model.shared.addPost(post) { success ->
-            if (success) {
-                viewModel?.posts?.add(0, post)
-                postAdapter?.notifyItemInserted(0)
-                Toast.makeText(context, "Post added successfully", Toast.LENGTH_SHORT).show()
-            } else {
+            if (!success) {
+                // Remove the post if the operation failed
+                viewModel?.posts?.removeAt(0)
+                postAdapter.notifyItemRemoved(0)
                 Toast.makeText(context, "Failed to add post", Toast.LENGTH_SHORT).show()
             }
         }

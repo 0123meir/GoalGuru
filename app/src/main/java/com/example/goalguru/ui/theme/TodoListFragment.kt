@@ -9,8 +9,10 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.goalguru.LoadingViewModel
 import com.example.goalguru.R
 import com.example.goalguru.TasksAdapter
 import com.example.goalguru.databinding.NewEditTaskLayoutBinding
@@ -23,6 +25,7 @@ class TodoListFragment : Fragment() {
     private var recyclerView: RecyclerView? = null
     private var newTask: FloatingActionButton? = null
     private lateinit var tasksAdapter: TasksAdapter
+    private val loadingViewModel: LoadingViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,6 +43,7 @@ class TodoListFragment : Fragment() {
         recyclerView?.layoutManager = LinearLayoutManager(context)
         recyclerView?.adapter = tasksAdapter
 
+        loadingViewModel.setDataLoaded(false) // Show loading
         loadTasks()
 
         newTask?.setOnClickListener {
@@ -57,6 +61,7 @@ class TodoListFragment : Fragment() {
     private fun loadTasks() {
         Model.shared.getTasks { tasks ->
             tasksAdapter.updateTasks(tasks)
+            loadingViewModel.setDataLoaded(true) // Hide loading
         }
     }
 

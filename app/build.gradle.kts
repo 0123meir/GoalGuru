@@ -94,8 +94,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.gson)
-    implementation("com.cloudinary:cloudinary-android:3.0.2")
-    implementation("com.cloudinary:cloudinary-android-preprocess:3.0.2")
+    implementation(libs.cloudinary.android.v302)
+    implementation(libs.cloudinary.android.preprocess.v302)
+    implementation(libs.lottie)
 
     implementation(libs.room.runtime)
     kapt(libs.androidx.room.compiler)
