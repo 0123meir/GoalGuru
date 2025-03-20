@@ -65,12 +65,6 @@ class ProfileFragment : Fragment() {
             }
         }
 
-//        userViewModel.user.observe(viewLifecycleOwner) { user ->
-//            email.text = Model.shared.getCurrentUserEmail()
-//            username.setText(Model.shared.getCurrentUserUsername())
-//            Glide.with(this).load(Model.shared.getCurrentUserImage()).into(profilePicture)
-//        }
-
         userViewModel.username.observe(viewLifecycleOwner) { retUsername ->
             username.setText(retUsername)
         }
