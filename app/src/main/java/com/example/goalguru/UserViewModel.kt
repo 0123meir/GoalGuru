@@ -92,4 +92,13 @@ class UserViewModel : ViewModel() {
     fun getUser(): FirebaseUser? {
         return _user.value
     }
+
+    fun updateUsername(newUsername: String) {
+        _username.value = newUsername
+    }
+
+    fun updateImage(newImage: String) {
+        _profilePicture.value = newImage
+
+    }
 }
