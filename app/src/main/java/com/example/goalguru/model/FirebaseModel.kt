@@ -3,6 +3,7 @@ package com.example.goalguru.model
 import UserViewModel
 import android.util.Log
 import com.google.firebase.Firebase
+import com.example.goalguru.model.User
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
@@ -16,7 +17,7 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
 
     init {
         val setting = firestoreSettings {
-            setLocalCacheSettings(memoryCacheSettings { })
+            setLocalCacheSettings(memoryCacheSettings {  })
         }
 
         database.firestoreSettings = setting
@@ -39,7 +40,7 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             }
     }
 
-    fun getPosts( callback: PostsCallback) {
+    fun getPosts(sinceLastUpdated: Long, callback: PostsCallback) {
         database.collection("posts")
             .get()
             .addOnCompleteListener {
@@ -85,32 +86,42 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             }
     }
 
-    fun deletePost(postId: String, callback: (Boolean) -> Unit) {
-        database.collection("posts").document(postId).delete()
-            .addOnCompleteListener {
-                callback(it.isSuccessful)
+    fun updateUsername(userUid: String?, username: String) {
+        if (userUid == null) {
+            return
+        }
+
+        val userMap = hashMapOf(
+            "username" to username
+        ) as Map<String, Any>
+
+        database.collection("users").document(userUid)
+            .update(userMap)
+            .addOnSuccessListener {
+                Log.d("UserViewModel", "Username updated in Firestore")
+            }
+            .addOnFailureListener { e ->
+                Log.d("UserViewModel", "Error updating username in Firestore", e)
             }
     }
 
-    fun addLike(postId: String, userId: String) {
-        val like = LikeEntity(
-            id = UUID.randomUUID().toString(),
-            userId = userId,
-            postId = postId
-        )
+    fun updateProfilePic(userUid: String?, profilePicture: String) {
+        if (userUid == null) {
+            return
+        }
 
-        database.collection("likes").document(like.id).set(like.json)
-    }
+        val userMap = hashMapOf(
+            "profilePicture" to profilePicture
+        ) as Map<String, Any>
 
-    fun removeLike(postId: String, userId: String) {
-        database.collection("likes")
-            .whereEqualTo(LikeEntity.KEY_POST_ID, postId)
-            .whereEqualTo(LikeEntity.KEY_USER_ID, userId)
-            .get()
-            .addOnSuccessListener { documents ->
-                for (document in documents) {
-                    database.collection("likes").document(document.id).delete()
-                }
+        database.collection("users").document(userUid)
+            .update(userMap)
+            .addOnSuccessListener {
+                Log.d("UserViewModel", "Profile picture updated in Firestore")
+                userViewModel?.updateUserData()
+            }
+            .addOnFailureListener { e ->
+                Log.d("UserViewModel", "Error updating profile picture in Firestore", e)
             }
     }
 
@@ -188,6 +199,28 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
             }
             .addOnFailureListener {
                 callback(null)
+            }
+    }
+
+    fun addLike(postId: String, userId: String) {
+        val like = LikeEntity(
+            id = UUID.randomUUID().toString(),
+            userId = userId,
+            postId = postId
+        )
+
+        database.collection("likes").document(like.id).set(like.json)
+    }
+
+    fun removeLike(postId: String, userId: String) {
+        database.collection("likes")
+            .whereEqualTo(LikeEntity.KEY_POST_ID, postId)
+            .whereEqualTo(LikeEntity.KEY_USER_ID, userId)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    database.collection("likes").document(document.id).delete()
+                }
             }
     }
 }

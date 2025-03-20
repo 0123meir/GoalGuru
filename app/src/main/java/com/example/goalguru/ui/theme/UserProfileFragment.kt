@@ -1,0 +1,155 @@
+package com.example.goalguru.ui.theme
+
+import UserViewModel
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import com.bumptech.glide.Glide
+import com.example.goalguru.R
+import com.example.goalguru.model.FirebaseModel
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import com.cloudinary.android.MediaManager
+import com.cloudinary.android.callback.ErrorInfo
+import com.cloudinary.android.callback.UploadCallback
+import com.example.goalguru.model.Model
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+
+class UserProfileFragment : Fragment() {
+
+    private val userViewModel: UserViewModel by viewModels()
+    private lateinit var firebaseModel: FirebaseModel
+
+    // Image storage related variables
+    private var imageUri: Uri? = null
+    private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.user_profile, container, false)
+
+        val profilePicture: ImageView = view.findViewById(R.id.profile_picture)
+        val email: TextView = view.findViewById(R.id.email)
+        val username: EditText = view.findViewById(R.id.username)
+        val updateProfileButton: Button = view.findViewById(R.id.update_profile_button)
+        val changeProfilePictureButton: Button = view.findViewById(R.id.change_profile_picture_button)
+
+        firebaseModel = FirebaseModel(userViewModel)
+
+        //Cloudinary
+        val config: HashMap<String, String> = HashMap()
+        config["cloud_name"] = "dgfkcu0ww"
+        config["api_key"] = "463671991214375"
+        config["api_secret"] = "FJ5sPBBA0ucHEausTA-Yz5dtA1w"
+
+        // Kind of a bandage to avoid initializing MediaManager multiple times
+        try {
+            MediaManager.get()
+        } catch (e: IllegalStateException) {
+            context?.let {
+                MediaManager.init(it, config)
+            }
+        }
+
+//        userViewModel.user.observe(viewLifecycleOwner) { user ->
+//            email.text = Model.shared.getCurrentUserEmail()
+//            username.setText(Model.shared.getCurrentUserUsername())
+//            Glide.with(this).load(Model.shared.getCurrentUserImage()).into(profilePicture)
+//        }
+
+        userViewModel.username.observe(viewLifecycleOwner) { retUsername ->
+            username.setText(retUsername)
+        }
+
+        userViewModel.profilePicture.observe(viewLifecycleOwner) { profilePictureUrl ->
+            Glide.with(this).load(profilePictureUrl).into(profilePicture)
+        }
+
+        userViewModel.email.observe(viewLifecycleOwner) { retEmail ->
+            email.text = retEmail
+        }
+
+        changeProfilePictureButton.setOnClickListener {
+            openFileChooser()
+        }
+
+        updateProfileButton.setOnClickListener {
+            val newUsername = username.text.toString()
+            firebaseModel.updateUsername(userViewModel.getCurrentUserId(), newUsername)
+            uploadImage()
+        }
+
+        pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                if (data != null && data.data != null) {
+                    imageUri = data.data
+                    profilePicture.setImageURI(imageUri)
+                }
+            }
+        }
+
+        return view
+    }
+
+    private fun openFileChooser() {
+        val intent = Intent()
+        intent.type = "image/*"
+        intent.action = Intent.ACTION_GET_CONTENT
+        pickImageLauncher.launch(intent)
+    }
+
+    private fun uploadImage() {
+        if (imageUri != null) {
+            try {
+                val inputStream = requireContext().contentResolver.openInputStream(imageUri ?: return)
+                val file = File(requireContext().cacheDir, "temp_image")
+                inputStream?.use { input ->
+                    FileOutputStream(file).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+
+                MediaManager.get().upload(file.absolutePath)
+                    .callback(object : UploadCallback {
+                        override fun onStart(requestId: String) { }
+                        override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) { }
+                        override fun onReschedule(requestId: String, error: ErrorInfo) { }
+
+                        override fun onSuccess(requestId: String, resultData: Map<*, *>) {
+                            val url = resultData["secure_url"] as String
+                            firebaseModel.updateProfilePic(userViewModel.getCurrentUserId(), url)
+                            Toast.makeText(context, "Profile picture updated successfully", Toast.LENGTH_SHORT).show()
+                        }
+
+                        override fun onError(requestId: String, error: ErrorInfo) {
+                            Toast.makeText(context, "Upload failed!", Toast.LENGTH_SHORT).show()
+                            Log.e("UserProfileFragment", "Upload failed: ${error.description}")
+                        }
+
+                    })
+                    .dispatch()
+
+            } catch (e: Exception) {
+                Log.e("UserProfileFragment", "Error uploading image", e)
+                Toast.makeText(context, "Error uploading image!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}

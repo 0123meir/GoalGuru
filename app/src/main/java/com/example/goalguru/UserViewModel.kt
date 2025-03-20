@@ -20,12 +20,16 @@ class UserViewModel : ViewModel() {
     private val _profilePicture = MutableLiveData<String>()
     val profilePicture: LiveData<String> get() = _profilePicture
 
+    private val _email = MutableLiveData<String>()
+    val email: LiveData<String> get() = _email
+
     init {
         _user.value = auth.currentUser
         _user.value?.uid?.let { userId ->
             firebaseModel.getUserByID(userId) { user ->
                 _username.value = user?.username ?: "unknown"
                 _profilePicture.value = user?.profilePicture ?: ""
+                _email.value = user?.email ?: ""
             }
         }
     }
@@ -39,6 +43,7 @@ class UserViewModel : ViewModel() {
                         firebaseModel.getUserByID(userId) { user ->
                             _username.value = user?.username ?: "unknown"
                             _profilePicture.value = user?.profilePicture ?: ""
+                            _email.value = user?.email ?: ""
                         }
                     }
                     Toast.makeText(MyApplication.Globals.context, "Login successful", Toast.LENGTH_SHORT).show()
@@ -48,6 +53,14 @@ class UserViewModel : ViewModel() {
                     Toast.makeText(MyApplication.Globals.context, "Login failed", Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+
+    fun updateUserData() {
+        firebaseModel.getUserByID(getCurrentUserId() ?: return) { user ->
+            _username.value = user?.username ?: "unknown"
+            _profilePicture.value = user?.profilePicture ?: ""
+            _email.value = user?.email ?: ""
+        }
     }
 
     fun registerUser(email: String, password: String, username: String) {
@@ -69,6 +82,7 @@ class UserViewModel : ViewModel() {
         _user.value = null
         _username.value = ""
         _profilePicture.value = ""
+        _email.value = ""
     }
 
     fun getCurrentUserId(): String? {

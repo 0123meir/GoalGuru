@@ -26,7 +26,7 @@ class Model private constructor() {
         val lastUpdated: Long = Post.lastUpdated
 
         // Fetch from Firebase first
-        firebaseModel.getPosts { postsFromDB: List<PostEntity> ->
+        firebaseModel.getPosts(lastUpdated) { postsFromDB: List<PostEntity> ->
             coroutineScope.launch {
                 var latestTime = lastUpdated
                 val posts = mutableListOf<Post>()
@@ -135,7 +135,7 @@ class Model private constructor() {
     // Delete a post
     fun deletePost(postId: String, callback: (Boolean) -> Unit) {
         // First delete from Firebase
-        firebaseModel.deletePost(postId) { success ->
+        Model.shared.deletePost(postId) { success ->
             if (success) {
                 // Then delete from local DB
                 coroutineScope.launch {
@@ -287,5 +287,10 @@ class Model private constructor() {
     // Get current user profile picture
     fun getCurrentUserImage(): String {
         return userViewModel.profilePicture.value ?: ""
+    }
+
+    // Get current user email
+    fun getCurrentUserEmail(): String {
+        return userViewModel.email.value ?: ""
     }
 }
