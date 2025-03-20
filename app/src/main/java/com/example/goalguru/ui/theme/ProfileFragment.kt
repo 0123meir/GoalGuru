@@ -85,6 +85,8 @@ class ProfileFragment : Fragment() {
             val newUsername = username.text.toString()
             firebaseModel.updateUsername(userViewModel.getCurrentUserId(), newUsername)
             uploadImage()
+            userViewModel.updateUsername(newUsername)
+            userViewModel.updateImage(imageUri.toString())
         }
 
         pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -93,6 +95,7 @@ class ProfileFragment : Fragment() {
                 if (data != null && data.data != null) {
                     imageUri = data.data
                     profilePicture.setImageURI(imageUri)
+
                 }
             }
         }
