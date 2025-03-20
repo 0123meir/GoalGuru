@@ -34,6 +34,9 @@ firebaseAuthKtx = "23.2.0"
 cloudinaryAndroid = "1.31.0"
 cloudinaryAndroidDownload = "1.31.0"
 cloudinaryAndroidPreprocessVersion = "1.31.0"
+navigation = "2.8.9"
+navigationCompose = "2.8.9"
+playServicesCastTv = "21.1.1"
 
 [libraries]
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
@@ -81,6 +84,8 @@ room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRunti
 firebase-common-ktx = { group = "com.google.firebase", name = "firebase-common-ktx", version.ref = "firebaseCommonKtx" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+play-services-cast-tv = { group = "com.google.android.gms", name = "play-services-cast-tv", version.ref = "playServicesCastTv" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

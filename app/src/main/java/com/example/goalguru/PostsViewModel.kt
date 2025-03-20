@@ -35,8 +35,6 @@ class PostsViewModel : ViewModel() {
     }
 
     fun updatePosts(posts: MutableList<Post>) {
-        Log.d("post: ", "posts: ${posts}")
-
         this.posts = posts
     }
 }
