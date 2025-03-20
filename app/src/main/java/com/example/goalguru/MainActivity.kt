@@ -24,7 +24,6 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.navController
 
         // Make sure the start destination is set to todoListFragment
-        // The navGraph should be configured correctly in XML, but this confirms it
         val navGraph = navController.navInflater.inflate(R.navigation.nav_graph)
         navGraph.setStartDestination(R.id.todoListFragment)
         navController.graph = navGraph
@@ -39,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         val profilePhoto = findViewById<ShapeableImageView>(R.id.iv_profile_photo)
         val forumButton = findViewById<ImageView>(R.id.iv_forum)
 
-        // Navigate to Todo List
+        // Navigate to to-do List
         todoListButton.setOnClickListener {
             if (navController.currentDestination?.id != R.id.todoListFragment) {
                 // Use popBackStack to the todoListFragment to avoid stack build-up
@@ -66,7 +65,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-    }
+        }
+
 
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()

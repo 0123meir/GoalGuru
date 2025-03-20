@@ -1,19 +1,77 @@
 package com.example.goalguru.model
 
+import android.content.Context
+import android.util.Log
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.UUID
+import com.example.goalguru.base.MyApplication
+import com.google.firebase.firestore.FieldValue
 
-@Entity
-data class Post(
-    @PrimaryKey val id: String = UUID.randomUUID().toString(),
+@Entity(tableName = "posts")
+data class PostEntity(
+    @PrimaryKey val id: String,
     val userId: String,
-    val userName: String,
-    val userProfile: String? = null,
-    var text: String,
-    var imageUrls: List<String> = emptyList(),
-    var likes: Int = 0,
-    var likedByUser: Boolean = false,
-    val comments: MutableList<Comment> = mutableListOf(),
+    val text: String,
+    val imageUrls: List<String>,
     val timestamp: Long = System.currentTimeMillis()
 )
+
+data class Post(
+    val id: String,
+    val userId: String,
+    var text: String,
+    var imageUrls: List<String>,
+    var likesCount: Int = 0,
+    var isLikedByUser: Boolean = false,
+    val comments: MutableList<Comment> = mutableListOf(),
+    val username: String = "",
+    val userProfilePicture: String = "",
+    val timestamp: Long? = null,
+) {
+
+    companion object {
+        var lastUpdated: Long
+            get() {
+                return MyApplication.Globals.context?.getSharedPreferences("TAG", Context.MODE_PRIVATE)
+                    ?.getLong(LOCAL_LAST_UPDATED, 0) ?: 0
+            }
+            set(value) {
+                val sharedPreferences = MyApplication.Globals.context?.getSharedPreferences("TAG", Context.MODE_PRIVATE)
+                sharedPreferences?.edit()?.putLong(LOCAL_LAST_UPDATED, value)?.apply()
+            }
+
+        const val KEY_ID = "id"
+        const val KEY_USER_ID = "userId"
+        const val KEY_TEXT = "text"
+        const val KEY_IMAGE_URLS = "imageUrls"
+        const val KEY_TIMESTAMP = "timestamp"
+        const val LAST_UPDATED = "lastUpdated"
+        private const val LOCAL_LAST_UPDATED = "posts_last_updated"
+
+        fun fromJSON(json: Map<String, Any>): PostEntity {
+            val id = json[KEY_ID] as String
+            val userId = json[KEY_USER_ID] as String
+            val text = json[KEY_TEXT] as String
+            val imageUrls = json[KEY_IMAGE_URLS] as List<String>
+            val timestamp = json[KEY_TIMESTAMP] as Long
+
+            return PostEntity(
+                id = id,
+                userId = userId,
+                text = text,
+                imageUrls = imageUrls,
+                timestamp = timestamp,
+            )
+        }
+    }
+
+    val json: HashMap<String, Any?>
+        get() = hashMapOf(
+            KEY_ID to id,
+            KEY_USER_ID to userId,
+            KEY_TEXT to text,
+            KEY_IMAGE_URLS to imageUrls,
+            KEY_TIMESTAMP to timestamp,
+            LAST_UPDATED to FieldValue.serverTimestamp()
+        )
+}

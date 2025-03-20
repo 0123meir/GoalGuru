@@ -4,16 +4,25 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.goalguru.model.Post
+import androidx.room.Transaction
+import androidx.room.Update
+import com.example.goalguru.model.PostEntity
 
 @Dao
 interface PostDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE) // This is used to init mock data
-    fun insertPosts(posts: MutableList<Post>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOne(post: PostEntity): Long
 
-    @Query("SELECT * FROM post")
-    fun getAllPosts(): MutableList<Post>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(post: PostEntity)
 
-    @Query("SELECT * FROM post WHERE id = :id")
-    fun getPostById(id: Int): Post
+    @Query("SELECT * FROM posts")
+    suspend fun getAllPosts(): MutableList<PostEntity>
+
+    @Query("DELETE FROM posts WHERE id = :postId")
+    suspend fun deletePostById(postId: String)
+
+    @Update
+    suspend fun updatePost(post: PostEntity): Int
 }
+

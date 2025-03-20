@@ -4,15 +4,22 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.goalguru.base.MyApplication
-import com.example.goalguru.model.Post
 import androidx.room.TypeConverters
-import com.example.goalguru.model.Comment
+import com.example.goalguru.model.CommentEntity
+import com.example.goalguru.model.LikeEntity
+import com.example.goalguru.model.PostEntity
+import com.example.goalguru.model.Task
 
-@Database(entities = [Post::class, Comment::class], version = 3)
+@Database(entities = [PostEntity::class, CommentEntity::class,
+                        Task::class, LikeEntity::class], version = 12)
 @TypeConverters(Converters::class)
 abstract class AppLocalDbRepository : RoomDatabase() {
     abstract fun postDao(): PostDao
     abstract fun commentDao(): CommentDao
+    abstract fun likeDao(): LikeDao
+    abstract fun taskDao(): TaskDao
+
+
 }
 
 object AppLocalDb {
