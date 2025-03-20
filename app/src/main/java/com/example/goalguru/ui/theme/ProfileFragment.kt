@@ -24,12 +24,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
-import com.example.goalguru.model.Model
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 
-class UserProfileFragment : Fragment() {
+class ProfileFragment : Fragment() {
 
     private val userViewModel: UserViewModel by viewModels()
     private lateinit var firebaseModel: FirebaseModel
@@ -42,7 +40,7 @@ class UserProfileFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.user_profile, container, false)
+        val view = inflater.inflate(R.layout.fragment_profile, container, false)
 
         val profilePicture: ImageView = view.findViewById(R.id.profile_picture)
         val email: TextView = view.findViewById(R.id.email)
@@ -66,12 +64,6 @@ class UserProfileFragment : Fragment() {
                 MediaManager.init(it, config)
             }
         }
-
-//        userViewModel.user.observe(viewLifecycleOwner) { user ->
-//            email.text = Model.shared.getCurrentUserEmail()
-//            username.setText(Model.shared.getCurrentUserUsername())
-//            Glide.with(this).load(Model.shared.getCurrentUserImage()).into(profilePicture)
-//        }
 
         userViewModel.username.observe(viewLifecycleOwner) { retUsername ->
             username.setText(retUsername)
@@ -103,6 +95,13 @@ class UserProfileFragment : Fragment() {
                     profilePicture.setImageURI(imageUri)
                 }
             }
+        }
+
+        val signOutButton: Button = view.findViewById(R.id.sign_out_button)
+        signOutButton.setOnClickListener {
+            userViewModel.logoutUser()
+            // Navigate back to sign in screen or finish activity
+            activity?.finish()
         }
 
         return view

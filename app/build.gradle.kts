@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -78,7 +79,10 @@ dependencies {
     implementation(libs.firebase.analytics.ktx)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.play.services.cast.tv)
     kapt(libs.glide.compiler)
+    implementation(libs.androidx.navigation.compose)
+    annotationProcessor(libs.glide.compiler)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.cardview)
     implementation(libs.androidx.constraintlayout)
