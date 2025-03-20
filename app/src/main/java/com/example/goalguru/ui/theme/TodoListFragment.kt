@@ -3,10 +3,12 @@ package com.example.goalguru.ui.theme
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -17,9 +19,14 @@ import com.example.goalguru.R
 import com.example.goalguru.TasksAdapter
 import com.example.goalguru.databinding.NewEditTaskLayoutBinding
 import com.example.goalguru.model.Model
+import com.example.goalguru.model.QuoteResponse
+import com.example.goalguru.model.RetrofitClient
 import com.example.goalguru.model.Task
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class TodoListFragment : Fragment() {
     private var recyclerView: RecyclerView? = null
@@ -52,7 +59,7 @@ class TodoListFragment : Fragment() {
             openNewTaskBottomSheet()
         }
 
-        fetchRandomQuote("inspirational")
+        fetchRandomQuote()
 
         return view
     }
@@ -213,20 +220,26 @@ class TodoListFragment : Fragment() {
         sheetBinding.taskDeadlineInput.addTextChangedListener(textWatcher)
     }
 
-    private fun fetchRandomQuote(tags: String) {
-        RetrofitClient.instance.getRandomQuote(tags).enqueue(object : Callback<QuoteResponse> {
-            override fun onResponse(call: Call<QuoteResponse>, response: Response<QuoteResponse>) {
+    private fun fetchRandomQuote() {
+        RetrofitClient.instance.getRandomQuote().enqueue(object : Callback<List<QuoteResponse>> {
+            override fun onResponse(call: Call<List<QuoteResponse>>, response: Response<List<QuoteResponse>>) {
                 if (response.isSuccessful) {
-                    val quote = response.body()
-                    quote?.let {
-                        todoListTitle.text = "\"${it.content}\" - ${it.author}"
+                    val quotes = response.body()
+                    if (quotes != null && quotes.isNotEmpty()) {
+                        val quote = quotes[0]
+                        todoListTitle.text = "\"${quote.content}\" - ${quote.author}"
+                    } else {
+                        Toast.makeText(context, "No quote received", Toast.LENGTH_SHORT).show()
                     }
+                } else {
+                    todoListTitle.text =
+                        "\"In the vast ecosystem of code, every Android developer builds bridges of innovation, turning lines of logic into apps that move the world forward.\" - Grok 2025"
                 }
             }
 
-            override fun onFailure(call: Call<QuoteResponse>, t: Throwable) {
-                Toast.makeText(context, "Failed to fetch quote", Toast.LENGTH_SHORT).show()
+            override fun onFailure(call: Call<List<QuoteResponse>>, t: Throwable) {
+                Toast.makeText(context, "Failed: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
-    }+
+    }
 }
