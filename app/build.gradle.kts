@@ -97,6 +97,8 @@ dependencies {
     implementation(libs.cloudinary.android.v302)
     implementation(libs.cloudinary.android.preprocess.v302)
     implementation(libs.lottie)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     implementation(libs.room.runtime)
     kapt(libs.androidx.room.compiler)

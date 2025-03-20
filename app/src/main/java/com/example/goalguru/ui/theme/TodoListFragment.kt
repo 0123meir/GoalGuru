@@ -3,10 +3,12 @@ package com.example.goalguru.ui.theme
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -17,15 +19,21 @@ import com.example.goalguru.R
 import com.example.goalguru.TasksAdapter
 import com.example.goalguru.databinding.NewEditTaskLayoutBinding
 import com.example.goalguru.model.Model
+import com.example.goalguru.model.QuoteResponse
+import com.example.goalguru.model.RetrofitClient
 import com.example.goalguru.model.Task
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class TodoListFragment : Fragment() {
     private var recyclerView: RecyclerView? = null
     private var newTask: FloatingActionButton? = null
     private lateinit var tasksAdapter: TasksAdapter
     private val loadingViewModel: LoadingViewModel by activityViewModels()
+    private lateinit var todoListTitle: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,6 +43,7 @@ class TodoListFragment : Fragment() {
 
         recyclerView = view.findViewById(R.id.task_list)
         newTask = view.findViewById(R.id.new_task)
+        todoListTitle = view.findViewById(R.id.todo_list_title)
 
         tasksAdapter = TasksAdapter(requireContext()) { task, position ->
             openEditTaskBottomSheet(task, position)
@@ -49,6 +58,8 @@ class TodoListFragment : Fragment() {
         newTask?.setOnClickListener {
             openNewTaskBottomSheet()
         }
+
+        fetchRandomQuote()
 
         return view
     }
@@ -207,5 +218,28 @@ class TodoListFragment : Fragment() {
         sheetBinding.taskGoalInput.addTextChangedListener(textWatcher)
         sheetBinding.taskDescriptionInput.addTextChangedListener(textWatcher)
         sheetBinding.taskDeadlineInput.addTextChangedListener(textWatcher)
+    }
+
+    private fun fetchRandomQuote() {
+        RetrofitClient.instance.getRandomQuote().enqueue(object : Callback<List<QuoteResponse>> {
+            override fun onResponse(call: Call<List<QuoteResponse>>, response: Response<List<QuoteResponse>>) {
+                if (response.isSuccessful) {
+                    val quotes = response.body()
+                    if (quotes != null && quotes.isNotEmpty()) {
+                        val quote = quotes[0]
+                        todoListTitle.text = "\"${quote.content}\" - ${quote.author}"
+                    } else {
+                        Toast.makeText(context, "No quote received", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    todoListTitle.text =
+                        "\"In the vast ecosystem of code, every Android developer builds bridges of innovation, turning lines of logic into apps that move the world forward.\" - Grok 2025"
+                }
+            }
+
+            override fun onFailure(call: Call<List<QuoteResponse>>, t: Throwable) {
+                Toast.makeText(context, "Failed: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }
