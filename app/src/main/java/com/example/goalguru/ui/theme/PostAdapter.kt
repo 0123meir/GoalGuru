@@ -34,12 +34,14 @@ class PostAdapter(
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     fun set(posts: MutableList<Post>) {
-        if(postsFragment.getPostType() == "your_posts") {
-            this.posts = posts.filter { post -> post.userId == Model.shared.getCurrentUserId() }
-                .toMutableList()
+        val filteredPosts = if (postsFragment.getPostType() == "your_posts") {
+            posts.filter { it.userId == Model.shared.getCurrentUserId() }
         } else {
-            this.posts = posts.filter { post -> post.userId != Model.shared.getCurrentUserId() }
-                .toMutableList()        }
+            posts.filter { it.userId != Model.shared.getCurrentUserId() }
+        }.sortedByDescending { it.timestamp }
+
+        this.posts = filteredPosts.toMutableList()
+        notifyDataSetChanged()
     }
 
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -184,17 +186,15 @@ class PostAdapter(
             .setTitle("Delete Post")
             .setMessage("Are you sure you want to delete this post?")
             .setPositiveButton("Delete") { _, _ ->
-                // Remove post from list
-                val mutablePosts = posts.toMutableList()
-                mutablePosts.removeAt(position)
-                posts = mutablePosts
 
-                // Delete post from database
+                posts.removeAt(position)
+                notifyItemRemoved(position)
+
                 Model.shared.deletePost(post.id) { success ->
-                    if (success) {
-                        notifyItemRemoved(position)
-                        Toast.makeText(context, "Post deleted successfully!", Toast.LENGTH_SHORT).show()
-                    } else {
+                    if (!success) {
+                        // Revert if server deletion fails
+                        posts.add(position, post)
+                        notifyItemInserted(position)
                         Toast.makeText(context, "Failed to delete post", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -202,7 +202,6 @@ class PostAdapter(
             .setNegativeButton("Cancel", null)
             .show()
     }
-
     private fun onEditClick(post: Post, position: Int) {
         postsFragment.editPost(post, position)
     }

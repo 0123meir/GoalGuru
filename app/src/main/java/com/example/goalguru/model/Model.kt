@@ -134,21 +134,14 @@ class Model private constructor() {
 
     // Delete a post
     fun deletePost(postId: String, callback: (Boolean) -> Unit) {
-        // First delete from Firebase
-        Model.shared.deletePost(postId) { success ->
-            if (success) {
-                // Then delete from local DB
                 coroutineScope.launch {
                     database.postDao().deletePostById(postId)
                     withContext(mainDispatcher) {
                         callback(true)
                     }
                 }
-            } else {
-                callback(false)
-            }
         }
-    }
+
 
     // Toggle like on a post
     fun toggleLike(postId: String, callback: (Boolean) -> Unit) {
