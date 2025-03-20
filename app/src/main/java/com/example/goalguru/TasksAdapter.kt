@@ -6,8 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
+import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.goalguru.model.Model
 import com.example.goalguru.model.Task
 
 class TasksAdapter(
@@ -48,13 +50,25 @@ class TasksAdapter(
         private val descriptionTextView: TextView = itemView.findViewById(R.id.task_description)
         private val deadlineTextView: TextView = itemView.findViewById(R.id.deadline)
         private val isTaskDone: CheckBox = itemView.findViewById(R.id.is_task_done)
-        private val cardView: CardView = itemView.findViewById(R.id.goal_card   )
+        private val cardView: CardView = itemView.findViewById(R.id.goal_card)
 
         fun bind(task: Task, position: Int) {
             goalTextView.text = task.title
             descriptionTextView.text = task.description
             deadlineTextView.text = deadlineTemplate(task.deadline)
             isTaskDone.isChecked = task.isChecked
+
+            isTaskDone.setOnCheckedChangeListener { _, isChecked ->
+                task.isChecked = isChecked
+                Model.shared.toggleTaskStatus(task.id) { success ->
+                    if (!success) {
+                        // Revert the UI change if the update fails
+                        task.isChecked = !isChecked
+                        isTaskDone.isChecked = !isChecked
+                        Toast.makeText(context, "Failed to update task status", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
 
             cardView.setOnClickListener {
                 onItemClicked(task, position)
