@@ -273,8 +273,45 @@ class Model private constructor() {
             }
         }
     }
+    fun toggleTaskStatus(taskId: String, callback: (Boolean) -> Unit) {
+        coroutineScope.launch {
+            // Retrieve the current task status
+            val task = database.taskDao().getTaskById(taskId)
+            if (task != null) {
+                // Toggle the task status
+                task.isChecked = !task.isChecked
 
-    fun deleteTask(taskId: String, callback: (Boolean) -> Unit) {
+                // Update the task status in Firebase
+                firebaseModel.updateTask(taskId, task) { success ->
+                    coroutineScope.launch {
+                        if (success) {
+                            // Update the task status in the local database
+                            database.taskDao().updateTask(task)
+                            withContext(mainDispatcher) {
+                                callback(true)
+                            }
+                        } else {
+                            withContext(mainDispatcher) {
+                                callback(false)
+                            }
+                        }
+                    }
+                }
+            } else {
+                withContext(mainDispatcher) {
+                    callback(false)
+                }
+            }
+        }.invokeOnCompletion { throwable ->
+            if (throwable != null) {
+                coroutineScope.launch {
+                    withContext(mainDispatcher) {
+                        callback(false)
+                    }
+                }
+            }
+        }
+    }    fun deleteTask(taskId: String, callback: (Boolean) -> Unit) {
         // First delete from Firebase
         firebaseModel.deleteTask(taskId) { success ->
             if (success) {
