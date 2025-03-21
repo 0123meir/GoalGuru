@@ -1,5 +1,6 @@
 package com.example.goalguru.ui.theme
 
+import UserViewModel
 import android.app.AlertDialog
 import android.text.Editable
 import android.text.TextWatcher
@@ -13,6 +14,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -30,18 +32,22 @@ import java.util.UUID
 
 class PostAdapter(
     private var posts: MutableList<Post> = mutableListOf(),
-    private val postsFragment: PostsFragment
+    private val postsFragment: PostsFragment,
+    private val viewLifecycleOwner: LifecycleOwner
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+    private val userViewModel = UserViewModel()
 
     fun set(posts: MutableList<Post>) {
-        val filteredPosts = if (postsFragment.getPostType() == "your_posts") {
-            posts.filter { it.userId == Model.shared.getCurrentUserId() }
-        } else {
-            posts.filter { it.userId != Model.shared.getCurrentUserId() }
-        }.sortedByDescending { it.timestamp }
+        userViewModel.userUid.observe(viewLifecycleOwner) { redUid ->
+            val filteredPosts = if (postsFragment.getPostType() == "your_posts") {
+                posts.filter { it.userId == redUid }
+            } else {
+                posts.filter { it.userId != redUid }
+            }.sortedByDescending { it.timestamp }
 
-        this.posts = filteredPosts.toMutableList()
-        notifyDataSetChanged()
+            this.posts = filteredPosts.toMutableList()
+            notifyDataSetChanged()
+        }
     }
 
     fun editPost(post: Post, position: Int) {

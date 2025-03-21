@@ -23,6 +23,9 @@ class UserViewModel : ViewModel() {
     private val _email = MutableLiveData<String>()
     val email: LiveData<String> get() = _email
 
+    private val _userUid = MutableLiveData<String>()
+    val userUid: LiveData<String> get() = _userUid
+
     init {
         _user.value = auth.currentUser
         _user.value?.uid?.let { userId ->
@@ -30,6 +33,7 @@ class UserViewModel : ViewModel() {
                 _username.value = user?.username ?: "unknown"
                 _profilePicture.value = user?.profilePicture ?: ""
                 _email.value = user?.email ?: ""
+                _userUid.value = user?.id ?: ""
             }
         }
     }
@@ -44,6 +48,7 @@ class UserViewModel : ViewModel() {
                             _username.value = user?.username ?: "unknown"
                             _profilePicture.value = user?.profilePicture ?: ""
                             _email.value = user?.email ?: ""
+                            _userUid.value = user?.id ?: ""
                         }
                     }
                     Toast.makeText(MyApplication.Globals.context, "Login successful", Toast.LENGTH_SHORT).show()
@@ -60,6 +65,7 @@ class UserViewModel : ViewModel() {
             _username.value = user?.username ?: "unknown"
             _profilePicture.value = user?.profilePicture ?: ""
             _email.value = user?.email ?: ""
+            _userUid.value = user?.id ?: ""
         }
     }
 

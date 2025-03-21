@@ -51,7 +51,7 @@ class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        postAdapter = PostAdapter(viewModel?.posts ?: mutableListOf(), this)
+        postAdapter = PostAdapter(viewModel?.posts ?: mutableListOf(), this, viewLifecycleOwner)
         viewModel?.setAdapter(postAdapter)
         recyclerView.adapter = postAdapter
 
