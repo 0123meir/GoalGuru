@@ -75,6 +75,21 @@ class UserViewModel : ViewModel() {
     }
 
     fun registerUser(email: String, password: String, username: String) {
+        if (email.isEmpty() || password.isEmpty() || username.isEmpty()) {
+            Toast.makeText(MyApplication.Globals.context, "All fields are required.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(MyApplication.Globals.context, "Invalid email format.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (password.length < 6) {
+            Toast.makeText(MyApplication.Globals.context, "Password must be at least 6 characters long.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
