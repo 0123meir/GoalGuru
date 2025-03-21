@@ -1,6 +1,8 @@
 package com.example.goalguru.model
 
 import UserViewModel
+import android.net.Uri
+import android.widget.Toast
 import com.example.goalguru.model.dao.AppLocalDb
 import com.example.goalguru.model.dao.AppLocalDbRepository
 import java.util.UUID
@@ -12,6 +14,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
+import android.content.Context
+import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
+import com.example.goalguru.ui.theme.PostDialogHandler
 
 class Model private constructor() {
 
@@ -102,6 +108,7 @@ class Model private constructor() {
         }
     }
     fun updatePost(updatedPost: PostEntity, callback: (Boolean) -> Unit) {
+        Log.d("test", "$updatedPost")
         firebaseModel.updatePost(updatedPost) { success ->
             if (success) {
                 coroutineScope.launch {
@@ -346,5 +353,36 @@ class Model private constructor() {
     // Get current user email
     fun getCurrentUserEmail(): String {
         return userViewModel.email.value ?: ""
+    }
+
+    fun uploadPostImages(
+        context: Context,
+        uriList: List<Uri>,
+        callback: (List<Uri>) -> Unit
+    ) {
+        val totalImages = uriList.size
+        var uploadedImages = 0
+        val returnedUris: MutableList<Uri> = mutableListOf()
+
+        for (uri in uriList) {
+            if (uri.toString().contains("mediapicker")) {
+                firebaseModel.uploadImage(context, uri, null) { success, url ->
+                    if (success && url != null) {
+                        returnedUris.add(Uri.parse(url))
+                    } else {
+                        Toast.makeText(context, "Error uploading image!", Toast.LENGTH_SHORT).show()
+                    }
+
+                    uploadedImages++
+                }
+            } else {
+                returnedUris.add(uri)
+                uploadedImages++
+            }
+
+            if (uploadedImages == totalImages) {
+                callback(returnedUris)
+            }
+        }
     }
 }

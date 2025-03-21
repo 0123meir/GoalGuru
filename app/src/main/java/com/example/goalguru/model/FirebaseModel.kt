@@ -1,12 +1,19 @@
 package com.example.goalguru.model
 
 import UserViewModel
+import android.content.Context
+import android.net.Uri
 import android.util.Log
+import com.cloudinary.android.MediaManager
+import com.cloudinary.android.callback.ErrorInfo
+import com.cloudinary.android.callback.UploadCallback
 import com.google.firebase.Firebase
 import com.example.goalguru.model.User
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.memoryCacheSettings
+import java.io.File
+import java.io.FileOutputStream
 import java.util.UUID
 
 typealias PostsCallback = (List<PostEntity>) -> Unit
@@ -226,5 +233,44 @@ class FirebaseModel(private val userViewModel: UserViewModel? = null) {
 
     fun deletePost(postId: String) {
         database.collection("posts").document(postId).delete()
+    }
+
+    fun uploadImage(context: Context, imageUri: Uri, userViewModel: UserViewModel?, callback: (Boolean, String?) -> Unit) {
+        if (imageUri != null) {
+            try {
+                val inputStream = context.contentResolver.openInputStream(imageUri)
+                val file = File(context.cacheDir, "temp_image")
+                inputStream?.use { input ->
+                    FileOutputStream(file).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+
+                MediaManager.get().upload(file.absolutePath)
+                    .callback(object : UploadCallback {
+                        override fun onStart(requestId: String) { }
+                        override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) { }
+                        override fun onReschedule(requestId: String, error: ErrorInfo) { }
+
+                        override fun onSuccess(requestId: String, resultData: Map<*, *>) {
+                            val url = resultData["secure_url"] as String
+                            callback(true, url)
+                        }
+
+                        override fun onError(requestId: String, error: ErrorInfo) {
+                            Log.e("FirebaseModel", "Upload failed: ${error.description}")
+                            callback(false, null)
+                        }
+
+                    })
+                    .dispatch()
+
+            } catch (e: Exception) {
+                Log.e("FirebaseModel", "Error uploading image", e)
+                callback(false, null)
+            }
+        } else {
+            callback(false, null)
+        }
     }
 }

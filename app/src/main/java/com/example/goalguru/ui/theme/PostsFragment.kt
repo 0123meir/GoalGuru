@@ -2,6 +2,7 @@ package com.example.goalguru.ui.theme
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -75,16 +76,18 @@ class PostsFragment : Fragment(), PostDialogHandler.PostDialogCallback {
     }
 
     fun editPost(updatedPost: Post, position: Int) {
-        val postEntity = PostEntity(
-            id = updatedPost.id,
-            userId = updatedPost.userId,
-            text = updatedPost.text,
-            imageUrls = updatedPost.imageUrls,
-            timestamp = updatedPost.timestamp ?: System.currentTimeMillis()
-        )
+
         dialogHandler.showPostDialog(updatedPost, getContent, object : PostDialogHandler.PostDialogCallback {
             override fun onPostSubmitted(post: Post) {
-
+                Log.d("test", "$post")
+                val postEntity = PostEntity(
+                    id = post.id,
+                    userId = post.userId,
+                    text = post.text,
+                    imageUrls = post.imageUrls,
+                    timestamp = post.timestamp ?: System.currentTimeMillis()
+                )
+                Log.d("test", "entity: $postEntity")
 
                 Model.shared.updatePost(postEntity) { success ->
                     if (success) {
