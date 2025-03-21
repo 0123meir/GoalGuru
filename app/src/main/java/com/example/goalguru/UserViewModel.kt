@@ -39,6 +39,11 @@ class UserViewModel : ViewModel() {
     }
 
     fun loginUser(email: String, password: String) {
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(MyApplication.Globals.context, "Email and password must not be empty", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {

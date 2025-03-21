@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseUser
 
 class LoginActivity : AppCompatActivity() {
     private val userViewModel: UserViewModel by viewModels()
+    private var hasAttemptedLogin = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +29,7 @@ class LoginActivity : AppCompatActivity() {
         signInButton.setOnClickListener {
             val usernameEmail = usernameEmailField.text.toString()
             val password = passwordField.text.toString()
-
+            hasAttemptedLogin = true
             userViewModel.loginUser(usernameEmail, password)
         }
 
@@ -38,7 +39,9 @@ class LoginActivity : AppCompatActivity() {
         }
 
         userViewModel.user.observe(this) { user ->
-            updateUI(user)
+            if (hasAttemptedLogin) {
+                updateUI(user)
+            }
         }
     }
 
