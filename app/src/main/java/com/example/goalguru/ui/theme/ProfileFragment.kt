@@ -50,21 +50,6 @@ class ProfileFragment : Fragment() {
 
         firebaseModel = FirebaseModel(userViewModel)
 
-        //Cloudinary
-        val config: HashMap<String, String> = HashMap()
-        config["cloud_name"] = "dgfkcu0ww"
-        config["api_key"] = "463671991214375"
-        config["api_secret"] = "FJ5sPBBA0ucHEausTA-Yz5dtA1w"
-
-        // Kind of a bandage to avoid initializing MediaManager multiple times
-        try {
-            MediaManager.get()
-        } catch (e: IllegalStateException) {
-            context?.let {
-                MediaManager.init(it, config)
-            }
-        }
-
         userViewModel.username.observe(viewLifecycleOwner) { retUsername ->
             username.setText(retUsername)
         }
@@ -118,39 +103,12 @@ class ProfileFragment : Fragment() {
     }
 
     private fun uploadImage() {
-        if (imageUri != null) {
-            try {
-                val inputStream = requireContext().contentResolver.openInputStream(imageUri ?: return)
-                val file = File(requireContext().cacheDir, "temp_image")
-                inputStream?.use { input ->
-                    FileOutputStream(file).use { output ->
-                        input.copyTo(output)
-                    }
+        imageUri?.let {
+            firebaseModel.uploadImage(requireContext(), it, userViewModel) { success, url ->
+                if (success && context != null && url != null) {
+                    firebaseModel.updateProfilePic(userViewModel.getCurrentUserId(), url)
+                    Toast.makeText(context, "Profile picture updated successfully", Toast.LENGTH_SHORT).show()
                 }
-
-                MediaManager.get().upload(file.absolutePath)
-                    .callback(object : UploadCallback {
-                        override fun onStart(requestId: String) { }
-                        override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) { }
-                        override fun onReschedule(requestId: String, error: ErrorInfo) { }
-
-                        override fun onSuccess(requestId: String, resultData: Map<*, *>) {
-                            val url = resultData["secure_url"] as String
-                            firebaseModel.updateProfilePic(userViewModel.getCurrentUserId(), url)
-                            Toast.makeText(context, "Profile picture updated successfully", Toast.LENGTH_SHORT).show()
-                        }
-
-                        override fun onError(requestId: String, error: ErrorInfo) {
-                            Toast.makeText(context, "Upload failed!", Toast.LENGTH_SHORT).show()
-                            Log.e("UserProfileFragment", "Upload failed: ${error.description}")
-                        }
-
-                    })
-                    .dispatch()
-
-            } catch (e: Exception) {
-                Log.e("UserProfileFragment", "Error uploading image", e)
-                Toast.makeText(context, "Error uploading image!", Toast.LENGTH_SHORT).show()
             }
         }
     }

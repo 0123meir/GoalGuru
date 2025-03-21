@@ -3,6 +3,7 @@ package com.example.goalguru.ui.theme
 import android.app.Dialog
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
@@ -12,6 +13,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.bumptech.glide.Glide
 import com.example.goalguru.R
 import com.example.goalguru.model.Model
@@ -68,7 +73,7 @@ class PostDialogHandler(private val context: Context) {
 
         btnAddImage.setOnClickListener {
             if (selectedImageUris.size < 3) {
-                imageContentLauncher.launch("image/*")
+                imageContentLauncher.launch("image/*") // Launch image picker here
             } else {
                 Toast.makeText(context, "Maximum 3 images allowed", Toast.LENGTH_SHORT).show()
             }
@@ -83,20 +88,41 @@ class PostDialogHandler(private val context: Context) {
             } else if (postText.length > 200) {
                 Toast.makeText(context, "Text length must be under 200 characters", Toast.LENGTH_SHORT).show()
             } else {
-                val newPost = post?.copy(text = postText, imageUrls = selectedImageUris.toList()) ?: Post(
-                    id = UUID.randomUUID().toString(),
-                    userId = Model.shared.getCurrentUserId(),
-                    text = postText,
-                    imageUrls = selectedImageUris.toList(),
-                    timestamp = System.currentTimeMillis(),
-                    likesCount = 0,
-                    isLikedByUser = false,
-                    comments = mutableListOf(),
-                    username = Model.shared.getCurrentUserUsername(),
-                    userProfilePicture = Model.shared.getCurrentUserImage()
-                )
-                callback.onPostSubmitted(newPost)
-                dialog?.dismiss()
+                val uriList = selectedImageUris.map { Uri.parse(it) }
+                if (uriList.isEmpty()) {
+                    val newPost = post?.copy(text = postText, imageUrls = emptyList()) ?: Post(
+                        id = UUID.randomUUID().toString(),
+                        userId = Model.shared.getCurrentUserId(),
+                        text = postText,
+                        imageUrls = emptyList(),
+                        timestamp = System.currentTimeMillis(),
+                        likesCount = 0,
+                        isLikedByUser = false,
+                        comments = mutableListOf(),
+                        username = Model.shared.getCurrentUserUsername(),
+                        userProfilePicture = Model.shared.getCurrentUserImage()
+                    )
+                    callback.onPostSubmitted(newPost)
+                    dialog?.dismiss()
+                } else {
+                    Model.shared.uploadPostImages(context, uriList) { returnedUris ->
+                        Log.d("test", "$returnedUris")
+                        val newPost = post?.copy(text = postText, imageUrls = returnedUris.map { it.toString() }) ?: Post(
+                            id = UUID.randomUUID().toString(),
+                            userId = Model.shared.getCurrentUserId(),
+                            text = postText,
+                            imageUrls = returnedUris.map { it.toString() },
+                            timestamp = System.currentTimeMillis(),
+                            likesCount = 0,
+                            isLikedByUser = false,
+                            comments = mutableListOf(),
+                            username = Model.shared.getCurrentUserUsername(),
+                            userProfilePicture = Model.shared.getCurrentUserImage()
+                        )
+                        callback.onPostSubmitted(newPost)
+                        dialog?.dismiss()
+                    }
+                }
             }
         }
 
